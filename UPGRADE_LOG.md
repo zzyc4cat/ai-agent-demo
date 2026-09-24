@@ -15,58 +15,147 @@
 
 工程模板、日志轮转与 contextvars、ModelRouter、PromptGuard 骨架、Checkpointer、DEBUG 大纲；系统提示含最高优先级与「不知道」约束。
 
-### 主要改动
-
-- 新增 `.gitignore`、`.env.example`、`requirements.txt`、`DEBUG.md`
-- `config/logging.yml`、`models.yml`、`prompt_guard.yml`；更新 `rag.yml` / `prompts.yml`
-- 重写 `utils/logger_handler.py`、`model/factory.py`（懒加载路由）
-- `agent/tools/prompt_guard.py`、`middleware.py`（skill 白名单 + 工具降级）、`react_agent.py`（checkpointer/护栏/Auto 换模钩子）
-- `rag/rag_service.py` 去掉 print，空检索返回「不知道」，UNTRUSTED 包裹
-- 更新 `prompts/main_prompt.txt`、`rag_summarize.txt`；新增 `prompts/skills/weekly_review.txt`
-- `tests/test_phase0.py`
-
 ### 测试
 
-```text
-pytest tests/test_phase0.py -v
-7 passed
-```
-
-覆盖：日志写入与 request_id、护栏泄露/忽略、额度错误识别、系统 Prompt 加载、UNTRUSTED、懒加载 import。
-
-### 备注
-
-- 旧扫地机器人民服语料仍在 `data/`，**Phase 1 清除并替换**。
-- Checkpointer 当前为 MemorySaver；持久化 SQLite 在 Phase 2 用户模块一并加强。
+`pytest tests/test_phase0.py` → **7 passed**
 
 ---
 
 ## Phase 1 — 领域迁移与示例语料
 
 - **日期**：2026-09-24
-- **尝试次数**：2（第 1 次：`writing_polish` 技能未含「不知道」导致断言失败；已补全文案）
+- **尝试次数**：2（writing_polish 缺「不知道」已修）
 - **结果**：**达标**
 - **快照标签**：`状态1`
 
-### 目标
-
-清除扫地机器人民服语料与客服 CSV；建立详细 sample 知识库与 Skills-A 提示词；chroma 指向 `data/sample`；强化系统优先与「不知道」。
-
-### 主要改动
-
-- 删除 `data/` 下扫地机 txt/pdf 与 `data/external/records.csv`、`prompts/report_prompt.txt`
-- 新增 `data/sample/guides/*`、`data/sample/notes/*`（使用说明/工作/学习/生活方法 + 番茄/康奈尔示例笔记）
-- Skills-A：`daily_briefing` `meeting_minutes` `writing_polish` `study_tutor` `deep_digest`（及已有 `weekly_review`）
-- 更新 `config/chroma.yml`、`app.py` 标题、`README.md`
-- `tests/test_phase1.py`
-
 ### 测试
 
-```text
-pytest tests/test_phase0.py tests/test_phase1.py
-Phase1: 5 passed（全量与 Phase0 合计 12 passed）
-```
+`pytest tests/test_phase1.py` → **5 passed**；扫地机器料已清除。
 
 ---
 
-## Phase 2 — （进行中）
+## Phase 2 — 用户隔离与存储
+
+- **日期**：2026-09-24
+- **尝试次数**：1
+- **结果**：**达标**
+- **快照标签**：`状态2`
+
+### 改动
+
+`services/storage|user|task|note_service.py`；thread_id=`{user_id}:{conversation_id}`；入库元数据 corpus。
+
+### 测试
+
+`pytest tests/test_phase2.py` → **3 passed**
+
+---
+
+## Phase 3 — Tools-A
+
+- **日期**：2026-09-24
+- **尝试次数**：2（模块级 RAG 急切初始化导致无 Key 测试失败 → 改为懒加载）
+- **结果**：**达标**
+- **快照标签**：`状态3`
+
+### 改动
+
+重写 `agent_tools.py`（rag/搜索/天气/时间/待办/笔记/记忆/沙箱/入库/set_skill）；删除客服 mock。
+
+### 测试
+
+`pytest tests/test_phase3.py` → **4 passed**
+
+---
+
+## Phase 4 — Skills-A
+
+- **日期**：2026-09-24
+- **尝试次数**：1
+- **结果**：**达标**
+- **快照标签**：`状态4`
+
+### 改动
+
+Skills-A 提示词齐套；白名单与 `set_skill` 校验；`tests/test_phase4.py`。
+
+### 测试
+
+`pytest tests/test_phase4.py` → **2 passed**
+
+---
+
+## Phase 5 — 开箱前端
+
+- **日期**：2026-09-24
+- **尝试次数**：1
+- **结果**：**达标**
+- **快照标签**：`状态5`
+
+### 改动
+
+`app.py`：首次建用户、切换/添加用户、Auto/手动模型、Skill 选择、推荐问题、request_id 展示；无 Key 时友好报错。
+
+### 测试
+
+UI 源码断言（pytest 不直接 `import app` 以免无 Key 强建 Agent）→ 见 `test_phase56_functional.py::test_app_source_has_user_and_model_ui` **passed**
+
+---
+
+## Phase 6 — 增强与发布就绪
+
+- **日期**：2026-09-24
+- **尝试次数**：2（护栏正则空白、app import/Agent 初始化）
+- **结果**：**达标**
+- **快照标签**：`状态6`
+
+### 改动
+
+- Tools-B 子集：`calculator`、闪卡三件套（`tools_b.py`）
+- Skills-B 部分：`spaced_repetition` / `error_attribution` / `study_plan`
+- 护栏规则增强；全量 pytest 绿
+- 本日志与 DEBUG 更新
+
+### 未纳入本阶段（明确延期，非失败）
+
+- BM25 混合检索完整实现、天气/搜索真实 API、日历 OAuth、FastAPI、Docker
+- 记入后续迭代，不记「不符合预期」
+
+### 测试
+
+全量：`pytest tests` → **25 passed**
+
+---
+
+## 总功能性测试矩阵（无真实 LLM 调用）
+
+| 功能 | 验证方式 | 结果 |
+|---|---|---|
+| 日志 request_id | test_phase0 | 通过 |
+| 模型列表/额度错误识别 | test_phase0 | 通过 |
+| 提示词泄露拒答 | test_phase0/56 | 通过 |
+| 系统优先 + 不知道 | test_phase1 | 通过 |
+| 无扫地机器料 | test_phase1 | 通过 |
+| 用户隔离待办/笔记 | test_phase2 | 通过 |
+| Tools-A 待办笔记沙箱 | test_phase3 | 通过 |
+| 天气/搜索诚实降级 | test_phase3 | 通过 |
+| Skills-A 可加载 | test_phase4 | 通过 |
+| set_skill 白名单 | test_phase4 | 通过 |
+| 计算与闪卡 | test_phase56 | 通过 |
+| Tools 注册齐全 | test_phase56 | 通过 |
+| 前端含用户/模型 UI | test_phase56 | 通过 |
+
+**需你本机有 Key 时再验**：`streamlit run app.py` 真实对话、RAG 入库后问答、Auto 换模。
+
+---
+
+## 回溯标签
+
+```text
+git checkout 状态0   # Phase0
+git checkout 状态1   # Phase1
+...
+git checkout 状态6   # 当前终态
+```
+
+（状态2–6 在同一次连续交付提交上打标，详见 git tag）

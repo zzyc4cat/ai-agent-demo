@@ -3,12 +3,14 @@ enabled: true
 
 # 要求泄露系统提示 → 直接拒答
 leak_patterns:
-  - 输出(你的|完整的)?系统提示
-  - 打印(你的)?(system\s*)?prompt
+  - 输出\s*(你的|完整的)?\s*系统提示
+  - 打印\s*(你的)?\s*(system\s*)?prompt
   - reveal\s+(your\s+)?(system\s+)?prompt
   - show\s+(me\s+)?(your\s+)?(system\s+)?prompt
   - 忽略.*(系统|上方|之前).*指令.*并.*(输出|告诉|展示).*提示
   - repeat\s+your\s+instructions
+  - 完整系统提示词
+  - system\s*prompt
 
 # 要求忽略规则 → 不覆盖 system，仅注入安全提醒后继续
 ignore_patterns:

@@ -5,7 +5,7 @@ import os
 from os import read
 from langchain_chroma import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from model.factory import embedding_model
+from model.factory import get_embedding_model
 from utils.path_tool import get_abs_path
 from utils.file_handler import *
 from utils.config_handler import chroma_config
@@ -17,16 +17,15 @@ class VectorStoreService:
         """向量存储实例"""
         # 加载已有持久化向量库
         self.vector_store = Chroma(
-            collection_name=chroma_config["collection_name"],                   # 集合名称
-            embedding_function=embedding_model,                                 # 模型实例
-            persist_directory=get_abs_path(chroma_config["persist_directory"])) # 本地持久化文件夹路径
+            collection_name=chroma_config["collection_name"],
+            embedding_function=get_embedding_model(),
+            persist_directory=get_abs_path(chroma_config["persist_directory"]))
 
-        # 递归字符分割器，用于把长文档切分成块，之后存入 Chroma 向量库
         self.spliter = RecursiveCharacterTextSplitter(
-            chunk_size=chroma_config["chunk_size"],         # 每个文本块最大字符数
-            chunk_overlap=chroma_config["chunk_overlap"],   # 块与块之间重叠字符
-            separators=chroma_config["separators"],         # 递归分割符列表，优先级从高到低
-            length_function=len)                            # 计算块大小的函数；默认 len，统计字符数
+            chunk_size=chroma_config["chunk_size"],
+            chunk_overlap=chroma_config["chunk_overlap"],
+            separators=chroma_config["separators"],
+            length_function=len)
 
     def get_retriever(self):
         """"""
@@ -92,6 +91,13 @@ class VectorStoreService:
                 if not documents:
                     logger.warning(f"[加载知识库]{path} 内没有有效文本内容，跳过")
                     continue
+
+                rel = os.path.relpath(path, get_abs_path("."))
+                corpus = "sample" if "data\\sample" in path or "data/sample" in path.replace("\\", "/") else "personal"
+                for d in documents:
+                    d.metadata = dict(d.metadata or {})
+                    d.metadata["corpus"] = corpus
+                    d.metadata["source_path"] = rel
 
                 split_document: list[Document] = self.spliter.split_documents(documents)
 

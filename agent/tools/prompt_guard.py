@@ -58,10 +58,10 @@ _guard: PromptGuard | None = None
 
 
 def get_prompt_guard() -> PromptGuard:
-    global _guard
-    if _guard is None:
-        _guard = PromptGuard()
-    return _guard
+    """每次从配置构造，避免测试/热更新读到旧规则。"""
+    from utils.config_handler import load_prompt_guard_config
+
+    return PromptGuard(load_prompt_guard_config())
 
 
 UNTRUSTED_BEGIN = "<<<UNTRUSTED_DATA begin>>>"

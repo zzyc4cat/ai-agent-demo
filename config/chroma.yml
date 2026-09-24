@@ -1,0 +1,20 @@
+﻿# 向量配置
+
+# 集合名称
+collection_name: agent
+# 本地持久化文件夹路径，chroma 会把向量、元数据、文档全部存到此目录。
+persist_directory: chroma_db
+# search_kwargs 字典内参数，返回文档数量，默认 4
+k: 3
+# 数据根目录
+data_path: data
+# MD5文件名
+md5_hex_store: md5.text
+# 返回文件夹内的文件列表所允许的文件后缀
+allow_konwledge_file_type: ["txt", "pdf"]
+# 每个文本块最大字符数（`length_function=len` 时就是字符数量）
+chunk_size: 200
+# 块与块之间重叠字符。建议一般 `chunk_size * 0.1~0.2`，防止语义被切断丢失上下文。
+chunk_overlap: 20
+# 递归分割符列表，优先级从高到低
+separators: ["\n\n","\n",".","。",",","，","!","！","?","？"," ",""]

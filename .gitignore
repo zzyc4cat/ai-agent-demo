@@ -1,0 +1,37 @@
+# secrets & env
+.env
+.env.local
+*.pem
+
+# python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# runtime data (local only)
+logs/*
+!logs/.gitkeep
+storage/*
+!storage/.gitkeep
+chroma_db/
+md5.text
+data/personal/**
+!data/personal/.gitkeep
+workspace/**
+!workspace/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

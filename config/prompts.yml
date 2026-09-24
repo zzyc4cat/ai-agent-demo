@@ -1,0 +1,5 @@
+﻿# 提示词配置
+main_prompt_path: prompts/main_prompt.txt
+rag_summarize_prompt_path: prompts/rag_summarize.txt
+report_prompt_path: prompts/skills/weekly_review.txt
+skills_dir: prompts/skills

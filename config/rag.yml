@@ -1,0 +1,3 @@
+﻿# RAG 默认模型名（可被 models.yml 覆盖；保留兼容）
+chat_model_name: qwen-turbo
+embedding_model_name: text-embedding-v4

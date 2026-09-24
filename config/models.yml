@@ -1,0 +1,50 @@
+# 聊天模型注册表（priority 越小越优先，用于 Auto）
+# api_key_env: 读取的环境变量名；未设置则该模型标记为 unavailable
+defaults:
+  embedding_model_id: dashscope_embedding_v4
+  mode: auto
+
+chat_models:
+  - id: qwen_turbo
+    provider: dashscope
+    model_name: qwen-turbo
+    priority: 10
+    enabled: true
+    api_key_env: DASHSCOPE_API_KEY
+    note: "低成本/常有免费额度，Auto 优先"
+
+  - id: qwen_plus
+    provider: dashscope
+    model_name: qwen-plus
+    priority: 20
+    enabled: true
+    api_key_env: DASHSCOPE_API_KEY
+    note: "均衡"
+
+  - id: qwen3_max
+    provider: dashscope
+    model_name: qwen3-max
+    priority: 30
+    enabled: true
+    api_key_env: DASHSCOPE_API_KEY
+    note: "高质量，额度通常更紧"
+
+embedding_models:
+  - id: dashscope_embedding_v4
+    provider: dashscope
+    model_name: text-embedding-v4
+    enabled: true
+    api_key_env: DASHSCOPE_API_KEY
+
+# 判定「额度/限流不可用」的错误子串（大小写不敏感）
+quota_error_markers:
+  - insufficient_quota
+  - rate.?limit
+  - 429
+  - quota
+  - arrearage
+  - free.?tier
+  - 额度
+  - 限流
+  - Throttling
+  - AllocationQuota

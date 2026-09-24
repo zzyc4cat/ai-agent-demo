@@ -1,0 +1,7 @@
+# 日志配置
+level: INFO
+json: false
+log_prompt: false
+# 按天轮转，保留天数
+backup_count: 14
+log_filename: agent.log

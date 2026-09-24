@@ -1,0 +1,5 @@
+﻿# Agent配置
+
+# 外部数据地址
+external_data_path: data/external/records.csv
+

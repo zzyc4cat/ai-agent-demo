@@ -17,6 +17,9 @@ __pycache__/
 # runtime data (local only)
 logs/*
 !logs/.gitkeep
+!logs/eval/
+logs/eval/*
+!logs/eval/.gitkeep
 storage/*
 !storage/.gitkeep
 chroma_db/

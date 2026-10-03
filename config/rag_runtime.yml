@@ -1,0 +1,46 @@
+# RAG 运行时配置（大体量升级）
+retrieve:
+  vector_k: 20
+  bm25_k: 20
+  rerank_top_n: 5
+  # RRF 融合分门控：低于此值视为不相关（无 DashScope 重排时使用）
+  score_threshold: 0.01
+  enable_query_rewrite: false
+  # similarity 门控：best_vector 低于此且 BM25 也弱则拒答（小库噪声抑制）
+  min_similarity: 0.55
+  # BM25 弱门控阈值（与向量分尺度不同；词重叠回退时约等于命中词数）
+  bm25_min_score: 1.0
+
+query_cache:
+  enabled: true
+  max_entries_per_user: 200
+  l1_ttl_seconds: 3600
+  l2_ttl_seconds: 900
+  empty_result_ttl_seconds: 300
+  persist_sqlite: true
+  semantic_l1: false
+  semantic_l1_threshold: 0.95
+
+collections:
+  sample: agent_sample
+  legacy_sample: agent
+  personal_prefix: agent_personal_
+
+chunking:
+  size: 800
+  overlap: 100
+
+ingest:
+  batch_size: 64
+  # 个人语料根目录；实际入库路径为 {personal_data_path}/{user_id}/
+  personal_data_path: data/personal
+
+embedding_cache:
+  enabled: true
+  directory: storage/embedding_cache
+
+rerank:
+  # dashscope | rrf（rrf=仅用融合分，不调外部重排）
+  provider: dashscope
+  model: gte-rerank
+  fallback: rrf

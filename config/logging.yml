@@ -5,3 +5,7 @@ log_prompt: false
 # 按天轮转，保留天数
 backup_count: 14
 log_filename: agent.log
+# 根目录 DEBUG_LOG.md 运行时追加与清理
+debug_log_enabled: true
+debug_log_max_chars: 400000
+debug_log_keep_chars: 240000

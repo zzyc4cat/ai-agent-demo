@@ -1,4 +1,4 @@
-"""Phase 2：用户隔离与任务/笔记存储。"""
+﻿"""Phase 2：用户隔离与任务/笔记存储。"""
 from __future__ import annotations
 
 import os
@@ -7,7 +7,9 @@ import sys
 import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SRC = os.path.join(ROOT, "src")
 sys.path.insert(0, ROOT)
+sys.path.insert(0, SRC)
 
 
 @pytest.fixture()

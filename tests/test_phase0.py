@@ -1,4 +1,4 @@
-"""Phase 0 验收测试：日志、模型路由、护栏、懒加载、Agent 可构建。"""
+﻿"""Phase 0 验收测试：日志、模型路由、护栏、懒加载、Agent 可构建。"""
 from __future__ import annotations
 
 import os
@@ -7,8 +7,10 @@ import sys
 import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
+SRC = os.path.join(ROOT, "src")
+for _p in (SRC, ROOT):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 
 def test_logger_writes_agent_log(tmp_path=None):

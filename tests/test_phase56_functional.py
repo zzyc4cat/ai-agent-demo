@@ -1,4 +1,4 @@
-"""Phase 5/6 与总功能冒烟（无真实 LLM）。"""
+﻿"""Phase 5/6 与总功能冒烟（无真实 LLM）。"""
 from __future__ import annotations
 
 import os
@@ -7,7 +7,9 @@ import sys
 import pytest
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SRC = os.path.join(ROOT, "src")
 sys.path.insert(0, ROOT)
+sys.path.insert(0, SRC)
 
 
 def test_app_source_has_user_and_model_ui():

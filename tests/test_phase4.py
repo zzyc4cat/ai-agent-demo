@@ -1,11 +1,13 @@
-"""Phase 4：Skills-A 提示词与白名单。"""
+﻿"""Phase 4：Skills-A 提示词与白名单。"""
 from __future__ import annotations
 
 import os
 import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+SRC = os.path.join(ROOT, "src")
 sys.path.insert(0, ROOT)
+sys.path.insert(0, SRC)
 
 
 def test_all_skills_a_loadable():
@@ -42,3 +44,4 @@ def test_set_skill_tool_rejects_unknown(tmp_path, monkeypatch):
     assert "白名单" in bad or "不知道" in bad
     ok = agent_tools.set_skill.invoke({"skill_name": "weekly_review"})
     assert "weekly_review" in ok
+    assert agent_tools.get_active_skill() == "weekly_review"

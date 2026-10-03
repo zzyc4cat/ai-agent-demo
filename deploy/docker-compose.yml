@@ -1,0 +1,19 @@
+# 在 deploy/ 目录执行: docker compose up --build
+# 构建上下文为仓库根目录
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8501:8501"
+    env_file:
+      - ../.env
+    volumes:
+      - ../storage:/app/storage
+      - ../chroma_db:/app/chroma_db
+      - ../logs:/app/logs
+      - ../data:/app/data
+      - ../workspace:/app/workspace
+    environment:
+      - PYTHONPATH=/app/src

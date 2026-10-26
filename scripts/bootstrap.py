@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""本地一键启动前置：venv / 依赖 / 目录 / .env 检查（仅本机自用，不做陌生人开箱保证）。"""
+"""
+本地一键启动前置：创建 .venv、pip install、补目录、从 .env.example 复制 .env、检查 Key。
+
+由 start.bat / start.ps1 调用。不做「零配置开箱给陌生人」保证。
+"""
 from __future__ import annotations
 
 import argparse
@@ -22,18 +26,21 @@ for _p in (str(SRC), str(ROOT)):
 
 
 def _venv_python() -> Path:
+    """返回虚拟环境 python 可执行文件路径。"""
     if os.name == "nt":
         return VENV_DIR / "Scripts" / "python.exe"
     return VENV_DIR / "bin" / "python"
 
 
 def _venv_streamlit() -> Path:
+    """返回虚拟环境 streamlit 可执行文件路径。"""
     if os.name == "nt":
         return VENV_DIR / "Scripts" / "streamlit.exe"
     return VENV_DIR / "bin" / "streamlit"
 
 
 def ensure_venv() -> Path:
+    """若不存在则创建 .venv。"""
     py = _venv_python()
     if py.is_file():
         print(f"[bootstrap] venv OK: {py}")
@@ -46,6 +53,7 @@ def ensure_venv() -> Path:
 
 
 def ensure_deps(py: Path, *, force: bool = False) -> None:
+    """按 requirements.txt 安装依赖（可跳过已装）。"""
     marker = VENV_DIR / ".deps_installed"
     if marker.is_file() and not force:
         print("[bootstrap] 依赖已安装（删除 .venv/.deps_installed 可强制重装）")
@@ -58,6 +66,7 @@ def ensure_deps(py: Path, *, force: bool = False) -> None:
 
 
 def ensure_dirs() -> None:
+    """创建 storage/logs 等运行时目录。"""
     for rel in ("storage", "logs", "chroma_db", "workspace", "data/personal"):
         (ROOT / rel).mkdir(parents=True, exist_ok=True)
     print("[bootstrap] 运行时目录就绪")
@@ -86,11 +95,13 @@ def ensure_env() -> bool:
 
 
 def check_python_version() -> None:
+    """要求 Python 不低于 3.10。"""
     if sys.version_info < (3, 10):
         raise SystemExit(f"[bootstrap] 需要 Python>=3.10，当前 {sys.version}")
 
 
 def main(argv: list[str] | None = None) -> int:
+    """执行启动前置检查与可选依赖安装。"""
     parser = argparse.ArgumentParser(description="本地启动前置检查")
     parser.add_argument("--force-deps", action="store_true", help="强制重装依赖")
     parser.add_argument("--check-only", action="store_true", help="只检查不装依赖")

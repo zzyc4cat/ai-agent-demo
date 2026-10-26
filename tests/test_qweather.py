@@ -1,4 +1,4 @@
-﻿"""和风天气 get_weather / qweather_client 测试。"""
+"""和风天气 get_weather / qweather_client 测试。"""
 from __future__ import annotations
 
 import os
@@ -15,6 +15,7 @@ from agent.tools.qweather_client import query_city_weather  # noqa: E402
 
 
 def test_weather_missing_key(monkeypatch):
+    """无 Key 时天气查询返回不知道说明。"""
     monkeypatch.setenv("QWEATHER_API_KEY", "")
     monkeypatch.setenv("HEWEATHER_API_KEY", "")
     out = query_city_weather("上海")
@@ -23,6 +24,7 @@ def test_weather_missing_key(monkeypatch):
 
 
 def test_weather_key_without_host(monkeypatch):
+    """有 Key 无 Host 时给出配置提示。"""
     monkeypatch.setenv("QWEATHER_API_KEY", "test-key-xxxxxxxx")
     monkeypatch.setenv("QWEATHER_API_HOST", "")
     monkeypatch.setenv("HEWEATHER_API_HOST", "")
@@ -32,12 +34,14 @@ def test_weather_key_without_host(monkeypatch):
 
 
 def test_weather_empty_city(monkeypatch):
+    """空城市名被拒绝。"""
     monkeypatch.setenv("QWEATHER_API_KEY", "k")
     monkeypatch.setenv("QWEATHER_API_HOST", "example.qweatherapi.com")
     assert "未提供城市名" in query_city_weather("  ")
 
 
 def test_weather_success_mocked(monkeypatch):
+    """Mock 接口成功时能格式化中文天气。"""
     monkeypatch.setenv("QWEATHER_API_KEY", "k")
     monkeypatch.setenv("QWEATHER_API_HOST", "demo.qweatherapi.com")
 
@@ -71,6 +75,7 @@ def test_weather_success_mocked(monkeypatch):
 
 
 def test_get_weather_tool_wraps(monkeypatch):
+    """get_weather 工具会 wrap_untrusted。"""
     monkeypatch.setenv("QWEATHER_API_KEY", "k")
     monkeypatch.setenv("QWEATHER_API_HOST", "demo.qweatherapi.com")
     from agent.tools.agent_tools import get_weather

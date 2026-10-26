@@ -1,4 +1,10 @@
-"""知识库入库 CLI：python -m rag.ingest --scope sample|personal --user <id> [--path ...] [--force]"""
+"""
+知识库增量入库 CLI。
+
+sample：chroma.yml data_path（默认 data/sample）→ collection agent_sample
+personal：必须 --user，默认 data/personal/{user_id}/ → agent_personal_{id}
+--force 忽略 hash 强制重建。成功打印 JSON stats。
+"""
 from __future__ import annotations
 
 import argparse
@@ -16,6 +22,7 @@ from utils.config_handler import chroma_config
 
 
 def main(argv: list[str] | None = None) -> int:
+    """解析 CLI 参数并对 sample/personal 目录执行增量入库。"""
     ensure_db()
     ensure_kb_tables()
     p = argparse.ArgumentParser(description="RAG 知识库增量入库")

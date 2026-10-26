@@ -1,4 +1,12 @@
-﻿"""个人综合助手 · Streamlit 入口"""
+"""
+个人综合助手 · Streamlit 界面入口（仓库根 app.py）。
+
+职责：用户名登录、会话菜单、技能/模型选择、把用户消息交给 ReactAgent.execute_stream，
+并把对白写入 chat_service。不在此实现工具或检索逻辑。
+
+无密码；仅适合本机。热重载时 reload chat_service 以免 pinned 参数丢失。
+write_stream 按字符 sleep 仅为观感，底层不是 token 流。
+"""
 from __future__ import annotations
 
 import sys
@@ -85,11 +93,13 @@ def _close_conv_menu() -> None:
 
 
 def _uid() -> int | None:
+    """从 session_state 解析当前登录用户主键。"""
     raw = st.session_state.get("user_id") or ""
     return int(raw) if str(raw).isdigit() else None
 
 
 def _login_as(username: str) -> None:
+    """按用户名登录并加载最近会话消息。"""
     u = user_service.switch_or_create(username)
     st.session_state["user_id"] = str(u["id"])
     st.session_state["username"] = u["username"]
@@ -105,6 +115,7 @@ def _login_as(username: str) -> None:
 
 
 def _logout_for_switch() -> None:
+    """退出当前用户以便切换账号。"""
     st.session_state["awaiting_login"] = True
     st.session_state["user_id"] = ""
     st.session_state["username"] = ""
@@ -115,6 +126,7 @@ def _logout_for_switch() -> None:
 
 
 def _start_new_chat() -> None:
+    """为当前用户开启空白新会话。"""
     uid = _uid()
     if uid is None:
         return
@@ -291,8 +303,7 @@ with st.sidebar:
         except Exception as e:
             st.error(str(e))
 
-st.divider()
-
+# —— 主区：须先登录；懒创建 Agent；展示历史并处理 chat_input ——
 if st.session_state["awaiting_login"] or not st.session_state.get("user_id"):
     st.warning("请先在左侧输入用户名并点击「进入」。")
     st.stop()
@@ -339,6 +350,7 @@ if prompt:
         )
 
         def stream_generator(generator, cache_list):
+            """把 Agent 增量文本伪装成逐字流给 write_stream。"""
             for chunk in generator:
                 cache_list.append(chunk)
                 for char in chunk:

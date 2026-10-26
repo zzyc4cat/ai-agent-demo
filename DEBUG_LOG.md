@@ -900,3 +900,163 @@
 
 ### [2026-10-03 11:41:23] stage=p0.harden.verify req=- user=- model=-
 - rounds=R1-R5 pytest_full=80passedx3 p0_tests=8passed api_no_key=503 api_bad_key=401 ssrf=blocked_loopback_metadata weak_gate=vector_and_bm25 set_skill=ok workspace=per_user_is_relative_to personal_path=data/personal/{uid} status=pass
+
+### [2026-10-05 17:43:08] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-05 17:43:16] stage=app.start req=- user=- model=-
+- entry=streamlit page=app.py
+
+### [2026-10-05 17:43:17] stage=model.select req=- user=- model=qwen_turbo
+- mode=auto model_id=qwen_turbo model_name=qwen-turbo
+
+### [2026-10-05 17:43:28] stage=app.start req=- user=- model=-
+- entry=streamlit page=app.py
+
+### [2026-10-05 17:43:29] stage=app.start req=- user=- model=-
+- entry=streamlit page=app.py
+
+### [2026-10-05 18:16:48] stage=user.create req=- user=- model=-
+- user_id=1 username=PinUser
+
+### [2026-10-05 18:16:48] stage=user.create req=- user=- model=-
+- user_id=1 username=KwUser
+
+### [2026-10-05 18:16:48] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-05 18:16:49] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-05 18:17:12] stage=rag.cache req=- user=- model=-
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-05 18:17:12] stage=rag.cache req=- user=- model=-
+- action=invalidate user_scope=u:1
+
+### [2026-10-05 18:17:12] stage=rag.cache req=- user=- model=-
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-05 18:17:12] stage=guard.block req=- user=- model=-
+- kind=leak matched=完整系统提示词
+
+### [2026-10-05 18:17:12] stage=rag.retrieve req=- user=- model=-
+- vector_hits=8 bm25_hits=8 fused=8 rerank=rrf rerank_top=5 gated=5 top_score=0.032018442622950824 query_preview=完全不存在的星座飞船燃料配方XYZ-999
+
+### [2026-10-05 18:17:13] stage=chat.start req=req_test_p0 user=u1 model=m1
+- phase=0 probe=True
+
+### [2026-10-05 18:17:13] stage=guard.block req=- user=- model=-
+- kind=leak matched=输出\s*(你的|完整的)?\s*系统提示
+
+### [2026-10-05 18:17:13] stage=guard.block req=- user=- model=-
+- kind=ignore_remind matched=ignore\s+(all\s+)?(previous|prior|above)\s+instructions
+
+### [2026-10-05 18:17:13] stage=guard.block req=- user=- model=-
+- kind=leak matched=reveal\s+(your\s+)?(system\s+)?prompt
+
+### [2026-10-05 18:17:13] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-05 18:17:13] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-05 18:17:13] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-05 18:17:13] stage=user.create req=- user=- model=-
+- user_id=1 username=Alice
+
+### [2026-10-05 18:17:13] stage=user.create req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-05 18:17:13] stage=user.switch req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-05 18:17:13] stage=user.create req=- user=- model=-
+- user_id=1 username=Carol
+
+### [2026-10-05 18:17:13] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-05 18:17:13] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-05 18:17:13] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-05 18:17:36] stage=user.create req=- user=- model=-
+- user_id=1 username=SkillUser
+
+### [2026-10-05 18:17:36] stage=user.create req=- user=- model=-
+- user_id=1 username=BUser
+
+### [2026-10-05 18:17:36] stage=guard.block req=- user=- model=-
+- kind=leak matched=打印\s*(你的)?\s*(system\s*)?prompt
+
+### [2026-10-05 18:17:37] stage=model.select req=- user=- model=qwen_turbo
+- mode=auto model_id=qwen_turbo model_name=qwen-turbo
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-05 18:17:37] stage=model.select req=- user=- model=qwen_turbo
+- mode=auto model_id=qwen_turbo model_name=qwen-turbo
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=answer user_scope=u:9
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- action=invalidate user_scope=u:9
+
+### [2026-10-05 18:17:37] stage=model.select req=- user=- model=qwen_turbo
+- mode=auto model_id=qwen_turbo model_name=qwen-turbo
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-05 18:17:37] stage=model.select req=- user=- model=qwen_turbo
+- mode=auto model_id=qwen_turbo model_name=qwen-turbo
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- action=invalidate user_scope=u:1
+
+### [2026-10-05 18:17:37] stage=rag.cache req=- user=- model=qwen_turbo
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-05 18:17:37] stage=rag.retrieve req=- user=- model=qwen_turbo
+- vector_hits=2 bm25_hits=1 fused=2 rerank=rrf rerank_top=2 gated=2 top_score=0.03278688524590164 query_preview=番茄
+
+### [2026-10-05 18:17:37] stage=rag.retrieve req=- user=- model=qwen_turbo
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=会议纪要
+
+### [2026-10-05 18:17:37] stage=rag.retrieve req=- user=- model=qwen_turbo
+- vector_hits=1 bm25_hits=1 fused=0 rerank=skipped rerank_top=0 gated=0 top_score=0.0 best_vector=0.1 best_bm25=0.2 weak_gate=True vector_weak=True bm25_weak=True query_preview=星座飞船
+
+### [2026-10-05 18:17:38] stage=user.create req=- user=- model=qwen_turbo
+- user_id=1 username=HistUser
+
+### [2026-10-05 18:17:38] stage=user.create req=- user=- model=qwen_turbo
+- user_id=2 username=Other
+
+
+### [2026-10-08 16:59:32] stage=docs.tech_stack_knowledge
+- 文档：docs/TECH_STACK_KNOWLEDGE.md；按最新要求整理纯技术知识，去除逐项工具功能与项目业务流程。
+- 范围：22 章、134 个小节；覆盖全部 requirements.txt 声明依赖、源码直接第三方导入与相关基础知识；扩展概念明确区分。
+- 验证：章节顺序、22 个目录锚点、代码块闭合、依赖名称覆盖、README 入口及旧草稿移除检查通过；纯文档结构与覆盖核验，不代表模型质量、性能或外部服务验收。
+- 改动：新增技术知识文档、README 链接和本记录；未修改业务代码，未执行真实模型或天气请求。

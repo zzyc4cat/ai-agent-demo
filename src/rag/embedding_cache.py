@@ -1,4 +1,8 @@
-"""Embedding 结果磁盘缓存（按 model+文本 hash）。"""
+"""
+Embedding 磁盘 JSON 缓存：key = sha256(model_tag + 文本)。
+
+目录默认 storage/embedding_cache/。model_tag 应使用 embedding 模型 id。
+"""
 from __future__ import annotations
 
 import hashlib
@@ -16,6 +20,7 @@ class CachedEmbeddings(Embeddings):
     """包装底层 Embeddings，缓存 embed_documents / embed_query。"""
 
     def __init__(self, inner: Embeddings, model_tag: str = "default") -> None:
+        """包装底层 Embeddings 并配置磁盘缓存目录。"""
         self.inner = inner
         self.model_tag = model_tag
         cfg = get_runtime().get("embedding_cache") or {}
@@ -25,10 +30,12 @@ class CachedEmbeddings(Embeddings):
             self.root.mkdir(parents=True, exist_ok=True)
 
     def _path(self, text: str) -> Path:
+        """计算某段文本对应的缓存 JSON 路径。"""
         h = hashlib.sha256(f"{self.model_tag}:{text}".encode("utf-8")).hexdigest()
         return self.root / f"{h}.json"
 
     def _get(self, text: str) -> list[float] | None:
+        """读磁盘缓存向量，未命中返回 None。"""
         if not self.enabled:
             return None
         p = self._path(text)
@@ -40,6 +47,7 @@ class CachedEmbeddings(Embeddings):
             return None
 
     def _set(self, text: str, vec: list[float]) -> None:
+        """把向量写入磁盘 JSON。"""
         if not self.enabled:
             return
         try:
@@ -48,6 +56,7 @@ class CachedEmbeddings(Embeddings):
             pass
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        """批量向量化，仅对缓存未命中的文本调底层。"""
         out: list[list[float] | None] = [self._get(t) for t in texts]
         missing_idx = [i for i, v in enumerate(out) if v is None]
         if missing_idx:
@@ -59,6 +68,7 @@ class CachedEmbeddings(Embeddings):
         return [v if v is not None else [] for v in out]
 
     def embed_query(self, text: str) -> list[float]:
+        """查询向量化，优先读缓存。"""
         cached = self._get(text)
         if cached is not None:
             return cached

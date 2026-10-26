@@ -13,6 +13,7 @@ sys.path.insert(0, SRC)
 
 
 def test_ssrf_blocks_localhost_and_metadata():
+    """SSRF 检查应拦截本机与云元数据地址。"""
     from agent.tools.ssrf_guard import unsafe_url_reason
 
     assert unsafe_url_reason("http://127.0.0.1/secret")
@@ -25,6 +26,7 @@ def test_ssrf_blocks_localhost_and_metadata():
 
 
 def test_fetch_webpage_blocks_ssrf():
+    """fetch_webpage 对危险 URL 应拒抓。"""
     from agent.tools.agent_tools import fetch_webpage
 
     out = fetch_webpage.invoke({"url": "http://127.0.0.1:8080/admin"})
@@ -33,6 +35,7 @@ def test_fetch_webpage_blocks_ssrf():
 
 
 def test_api_requires_key(monkeypatch):
+    """受保护 API 无密钥或错误密钥应失败。"""
     from fastapi.testclient import TestClient
     import api_server
 
@@ -66,6 +69,7 @@ def test_api_requires_key(monkeypatch):
 
 
 def test_personal_corpus_path_isolated():
+    """个人语料路径必须按 user_id 分子目录。"""
     from rag.utils_rag import personal_corpus_path
 
     p1 = personal_corpus_path(1)
@@ -76,6 +80,7 @@ def test_personal_corpus_path_isolated():
 
 
 def test_skill_whitelist_matches_files():
+    """白名单与 prompts/skills 文件一致。"""
     from pathlib import Path
     from agent.tools.middleware import SKILL_WHITELIST
 
@@ -87,6 +92,7 @@ def test_skill_whitelist_matches_files():
 
 
 def test_calculator_rejects_huge_pow():
+    """计算器应拒绝过深幂运算。"""
     from agent.tools.tools_b import calculator
 
     out = calculator.invoke({"expression": "9**9**9**9"})

@@ -1,4 +1,8 @@
-"""Phase 1：黄金集评测 + 工具冒烟，输出 JSON/Markdown 报告。"""
+"""
+黄金集评测 + 工具冒烟。读 tests/fixtures/rag_eval.jsonl，报告写入 logs/eval/。
+
+尽量少调 LLM：无 Key 则跳过 summarize。hit_or_unknown 等标签较宽松，不宜当生产准确率。
+"""
 from __future__ import annotations
 
 import json
@@ -17,6 +21,7 @@ EVAL_PATH = ROOT / "tests" / "fixtures" / "rag_eval.jsonl"
 
 
 def _load_eval_rows() -> list[dict]:
+    """读取 rag_eval.jsonl 评测用例。"""
     rows = []
     if not EVAL_PATH.is_file():
         return rows
@@ -28,6 +33,7 @@ def _load_eval_rows() -> list[dict]:
 
 
 def _classify_rag(expect: str, answer: str) -> tuple[bool, str]:
+    """按期望标签宽松判定检索/拒答是否可接受。"""
     ans = (answer or "").strip()
     unknown = ans == "不知道" or ans.startswith("不知道")
     if expect == "unknown":
@@ -118,12 +124,14 @@ def run_rag_eval(limit: int | None = None) -> dict:
 
 
 def run_tool_smoke() -> dict:
+    """对若干 Agent 工具做无 Key 也可跑的冒烟。"""
     from dotenv import load_dotenv
 
     load_dotenv(ROOT / ".env")
     items = []
 
     def one(name, fn):
+        """执行单个工具调用并记录耗时与成败。"""
         t0 = time.time()
         try:
             out = fn()
@@ -178,6 +186,7 @@ def run_tool_smoke() -> dict:
 
 
 def main() -> int:
+    """跑 RAG 评测与工具冒烟并写 logs/eval 报告。"""
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     rag = run_rag_eval()

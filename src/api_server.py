@@ -1,4 +1,10 @@
-"""FastAPI 服务入口：健康检查 + 同步聊天（需 API Key）。"""
+"""
+可选 HTTP API（uvicorn api_server:app）。
+
+GET /health 公开。POST /chat 与 GET /rag/summarize 必须 AGENT_API_KEY
+（Bearer 或 X-API-Key）。username 只在鉴权之后选择数据空间，不是口令。
+skill 必须在 SKILL_WHITELIST。异常对客户端脱敏。
+"""
 from __future__ import annotations
 
 import os
@@ -22,6 +28,7 @@ _agent: ReactAgent | None = None
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    """进程生命周期：启动时确保 SQLite 表存在。"""
     ensure_db()
     yield
 
@@ -44,6 +51,7 @@ class ChatResponse(BaseModel):
 
 
 def _expected_api_key() -> str:
+    """读取环境变量 AGENT_API_KEY。"""
     return (os.getenv("AGENT_API_KEY") or "").strip()
 
 
@@ -51,6 +59,7 @@ def _extract_api_key(
     authorization: str | None,
     x_api_key: str | None,
 ) -> str:
+    """从 Bearer 或 X-API-Key 头取出客户端密钥。"""
     if x_api_key and x_api_key.strip():
         return x_api_key.strip()
     auth = (authorization or "").strip()
@@ -80,6 +89,7 @@ def require_api_key(
 
 
 def _get_agent() -> ReactAgent:
+    """懒创建并缓存进程内 ReactAgent 单例。"""
     global _agent
     if _agent is None:
         _agent = ReactAgent(model_mode="auto")
@@ -87,6 +97,7 @@ def _get_agent() -> ReactAgent:
 
 
 def _validate_skill(skill: str) -> str:
+    """校验 skill 是否在白名单，非法则 400。"""
     name = (skill or "default").strip() or "default"
     if name not in SKILL_WHITELIST:
         raise HTTPException(
@@ -98,6 +109,7 @@ def _validate_skill(skill: str) -> str:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
+    """健康检查，并告知是否已配置 API Key。"""
     keyed = bool(_expected_api_key())
     return {"status": "ok", "api_key_configured": keyed}
 
@@ -108,6 +120,7 @@ def chat(
     authorization: str | None = Header(default=None),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> ChatResponse:
+    """鉴权后执行一轮对话并返回完整回复。"""
     require_api_key(authorization, x_api_key)
     ensure_db()
     skill = _validate_skill(body.skill)
@@ -144,6 +157,7 @@ def rag_summarize(
     authorization: str | None = Header(default=None),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
 ) -> dict[str, Any]:
+    """鉴权后对查询做 RAG 总结。"""
     require_api_key(authorization, x_api_key)
     ensure_db()
     if not (q or "").strip():

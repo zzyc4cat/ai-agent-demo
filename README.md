@@ -9,6 +9,7 @@
 | [`README.md`](README.md) | 项目说明、功能、技术栈、启动与边界（本文） |
 | [`DEBUG.md`](DEBUG.md) | 调参 / 排障：改哪个配置、如何对比效果 |
 | [`DEBUG_LOG.md`](DEBUG_LOG.md) | 历史验收归档 + 运行时阶段日志（过大自动裁剪） |
+| [`TECH_STACK_KNOWLEDGE.md`](docs/TECH_STACK_KNOWLEDGE.md) | 按主题整理技术栈与知识原理，供学习和面试复习 |
 
 ---
 

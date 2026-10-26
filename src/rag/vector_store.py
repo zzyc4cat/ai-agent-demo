@@ -1,4 +1,9 @@
-﻿"""向量存储：多 collection、切分、与 BM25 双写。"""
+"""
+Chroma 向量库 + 切分 + 与 BM25 双写。
+
+collection：agent_sample / agent_personal_{id} / 遗留 agent。
+ingest_path 按文件 content_hash 增量；变更则删旧 chunk 再写入。
+"""
 from __future__ import annotations
 
 import os
@@ -21,17 +26,20 @@ from utils.path_tool import get_abs_path
 
 
 def collection_name_for_sample() -> str:
+    """返回示例知识库 Chroma collection 名。"""
     rt = get_runtime().get("collections") or {}
     return str(rt.get("sample") or "agent_sample")
 
 
 def collection_name_for_personal(user_id: int) -> str:
+    """返回某用户个人知识库 collection 名。"""
     rt = get_runtime().get("collections") or {}
     prefix = str(rt.get("personal_prefix") or "agent_personal_")
     return f"{prefix}{user_id}"
 
 
 def legacy_sample_collection() -> str:
+    """返回迁移前旧 collection 名。"""
     rt = get_runtime().get("collections") or {}
     return str(rt.get("legacy_sample") or "agent")
 
@@ -40,6 +48,7 @@ class VectorStoreService:
     """向量存储类（按 collection 实例化）。"""
 
     def __init__(self, collection_name: str | None = None):
+        """打开 Chroma、切分器与同名 BM25 索引。"""
         self.collection_name = collection_name or collection_name_for_sample()
         persist = get_abs_path(chroma_config["persist_directory"])
         try:
@@ -75,6 +84,7 @@ class VectorStoreService:
         return out
 
     def delete_by_source(self, source_path: str) -> None:
+        """按源路径删除向量分块并同步 BM25。"""
         try:
             self.vector_store.delete(where={"source_path": source_path})
         except Exception as e:
@@ -83,6 +93,7 @@ class VectorStoreService:
         self.bm25.save()
 
     def add_split_documents(self, documents: list[Document], *, source_path: str) -> int:
+        """写入切分后的文档到向量库与 BM25。"""
         for i, d in enumerate(documents):
             meta = dict(d.metadata or {})
             meta["source_path"] = source_path
@@ -95,6 +106,7 @@ class VectorStoreService:
         return len(documents)
 
     def _load_file_documents(self, path: str) -> list[Document]:
+        """按后缀用对应 Loader 读取文件。"""
         lower = path.lower()
         if lower.endswith(".txt"):
             return txt_loader(path)
@@ -105,6 +117,7 @@ class VectorStoreService:
         return []
 
     def _split_documents(self, documents: list[Document], path: str) -> list[Document]:
+        """Markdown 先按标题切再递归切分，其它直接递归切。"""
         if path.lower().endswith((".md", ".markdown")):
             try:
                 headers = [("#", "h1"), ("##", "h2"), ("###", "h3")]
@@ -203,4 +216,5 @@ class VectorStoreService:
 
 
 def get_vector_store(collection: str) -> VectorStoreService:
+    """按 collection 名构造 VectorStoreService。"""
     return VectorStoreService(collection_name=collection)

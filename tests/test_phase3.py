@@ -1,4 +1,4 @@
-﻿"""Phase 3：Tools-A 行为测试（不依赖真实 LLM）。"""
+"""Phase 3：Tools-A 行为测试（不依赖真实 LLM）。"""
 from __future__ import annotations
 
 import os
@@ -14,6 +14,7 @@ sys.path.insert(0, SRC)
 
 @pytest.fixture()
 def user_ctx(tmp_path, monkeypatch):
+    """fixture：绑定测试用户到 Agent 工具。"""
     import services.storage as storage
     from services import user_service
     from agent.tools import agent_tools
@@ -32,6 +33,7 @@ def user_ctx(tmp_path, monkeypatch):
 
 
 def test_tasks_notes_tools(user_ctx):
+    """待办与笔记工具可读写。"""
     from agent.tools.agent_tools import task_add, task_list, task_complete, note_write, note_search
 
     r = task_add.invoke({"title": "写周报", "due_at": "2026-09-30", "priority": "P1"})
@@ -51,6 +53,7 @@ def test_tasks_notes_tools(user_ctx):
 
 
 def test_workspace_sandbox(user_ctx, tmp_path):
+    """工作区路径不能逃出用户沙箱。"""
     from agent.tools.agent_tools import workspace_list, workspace_read, _safe_workspace_path
     import pytest
     from agent.tools import agent_tools
@@ -75,6 +78,7 @@ def test_workspace_sandbox(user_ctx, tmp_path):
 
 
 def test_weather_and_web_degrade_honestly(user_ctx, monkeypatch):
+    """天气/搜索失败应诚实降级而非编造。"""
     from agent.tools.agent_tools import get_weather, web_search
 
     # 无 Key 时诚实降级
@@ -91,6 +95,7 @@ def test_weather_and_web_degrade_honestly(user_ctx, monkeypatch):
 
 
 def test_old_mock_tools_removed():
+    """旧 mock 工具不应再注册。"""
     import agent.tools.agent_tools as t
 
     assert not hasattr(t, "get_user_id") or "fetch_external_data" not in dir(t)

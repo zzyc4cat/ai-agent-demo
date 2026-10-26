@@ -1,4 +1,9 @@
-"""混合检索：向量 + BM25 → RRF → 可选 DashScope 重排 → 门控。"""
+"""
+混合检索：各路向量 + 各 BM25 → RRF 融合 → 可选 gte-rerank → 分数门控。
+
+弱门控：best_vector < min_similarity 且 best_bm25 < bm25_min_score 才整路拒答。
+配置见 config/rag_runtime.yml。
+"""
 from __future__ import annotations
 
 import os
@@ -28,6 +33,7 @@ def rrf_fuse(
 
 
 def _doc_id(doc: Document) -> str:
+    """用 chunk_id 或内容哈希作为 RRF 融合主键。"""
     meta = doc.metadata or {}
     if meta.get("chunk_id"):
         return str(meta["chunk_id"])
@@ -96,6 +102,7 @@ class HybridRetriever:
         self.bm25_min_score = float(rt.get("bm25_min_score", 1.0))
 
     def retrieve(self, query: str) -> tuple[list[Document], dict[str, Any]]:
+        """向量+BM25 弱门控 → RRF → 可选重排 → 分数截断。"""
         v_hits = self.vector_search_fn(query, self.vector_k)
         b_hits: list[tuple[Document, float]] = []
         for idx in self.bm25_indexes:

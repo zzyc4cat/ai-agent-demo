@@ -1,4 +1,9 @@
-"""出站 URL 安全检查：阻止 SSRF（本机 / 内网 / 链路本地 / 云元数据）。"""
+"""
+出站 URL 安全检查，供 fetch_webpage 调用。
+
+拦截非 http(s)、本机名、环回、私网、链路本地、组播、保留地址及云 metadata。
+解析 DNS 后检查所有 A/AAAA；调用方可配合「不跟随危险 Location」使用。
+"""
 from __future__ import annotations
 
 import ipaddress

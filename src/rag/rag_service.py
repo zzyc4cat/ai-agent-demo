@@ -1,4 +1,9 @@
-﻿"""RAG 总结：查询缓存 → 混合检索 → Prompt；不足则不知道。"""
+"""
+RAG 总结服务：L2 答案缓存 → L1 文档缓存 → 混合检索 → 填 Prompt 调聊天模型。
+
+无命中返回「不知道」。登录用户会同时检索 sample + personal collection。
+L2 cache key 含当前 Auto 聊天模型 id，避免换模串答案。
+"""
 from __future__ import annotations
 
 import hashlib
@@ -26,10 +31,12 @@ from utils.prompt_loader import load_rag_prompts
 
 
 def _prompt_version(text: str) -> str:
+    """对 RAG Prompt 文本做短哈希，纳入 L2 缓存键。"""
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:12]
 
 
 def _serialize_docs(docs: list[Document]) -> list[dict[str, Any]]:
+    """把 Document 列表转成可 JSON 缓存的字典。"""
     return [
         {"page_content": d.page_content, "metadata": dict(d.metadata or {})}
         for d in docs
@@ -37,11 +44,14 @@ def _serialize_docs(docs: list[Document]) -> list[dict[str, Any]]:
 
 
 def _deserialize_docs(rows: list[dict[str, Any]]) -> list[Document]:
+    """把缓存字典还原为 Document。"""
     return [Document(page_content=r["page_content"], metadata=r.get("metadata") or {}) for r in rows]
 
 
 class RagSummarizeService:
+    """对外 rag_summarize / retrieve_docs；工具 rag_summarize 与 API /rag/summarize 共用。"""
     def __init__(self) -> None:
+        """加载 Prompt 并打开 sample 向量库。"""
         self.prompt_text = load_rag_prompts()
         self.prompt_template = PromptTemplate.from_template(self.prompt_text)
         self.prompt_ver = _prompt_version(self.prompt_text)
@@ -51,9 +61,11 @@ class RagSummarizeService:
         self.cache = get_query_cache()
 
     def _chain(self):
+        """组装 Prompt → 可选日志 → 聊天模型 → 字符串。"""
         model = get_chat_model()
 
         def maybe_log_prompt(prompt):
+            """DEBUG 时记录即将发给模型的 Prompt 预览。"""
             if should_log_prompt():
                 log_event("rag.prompt", preview=str(prompt)[:500])
             return prompt
@@ -61,6 +73,7 @@ class RagSummarizeService:
         return self.prompt_template | maybe_log_prompt | model | StrOutputParser()
 
     def _stores_for_user(self, user_id: int | None) -> list[VectorStoreService]:
+        """返回 sample、遗留 collection 与个人库列表。"""
         stores = [self.sample_store]
         # legacy 并行检索（迁移前数据）
         if self._legacy_name != self.sample_store.collection_name:
@@ -73,15 +86,18 @@ class RagSummarizeService:
         return stores
 
     def _kb_version_token(self, user_id: int | None) -> str:
+        """拼接当前用户相关知识库版本，作缓存失效依据。"""
         parts = [get_kb_version("sample")]
         if user_id is not None:
             parts.append(get_kb_version(f"personal:{user_id}"))
         return "|".join(parts)
 
     def retrieve_docs(self, query: str, user_id: int | None = None) -> list[Document]:
+        """对用户可见语料做混合检索，返回入选文档。"""
         stores = self._stores_for_user(user_id)
 
         def vector_search(q: str, k: int) -> list[tuple[Document, float]]:
+            """合并多 collection 向量命中并按相关度截断。"""
             merged: list[tuple[Document, float]] = []
             for st in stores:
                 merged.extend(st.similarity_search_with_score(q, k=k))
@@ -96,6 +112,7 @@ class RagSummarizeService:
         return docs
 
     def rag_summarize(self, query: str, user_id: int | None = None) -> str:
+        """走 L2/L1 缓存或检索后生成总结；无命中返回不知道。"""
         scope = f"u:{user_id}" if user_id is not None else "u:anon"
         kb_ver = self._kb_version_token(user_id)
         corpus_scope = "sample+personal" if user_id is not None else "sample"

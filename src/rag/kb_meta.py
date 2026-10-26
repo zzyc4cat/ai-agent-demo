@@ -1,4 +1,8 @@
-"""知识库元数据：kb_version、文件清单。"""
+"""
+知识库元数据表 kb_meta / kb_files：记录 scope 的 kb_version 与文件 content_hash。
+
+入库变更会 bump 版本，从而使 QueryCache 的 key 失效。
+"""
 from __future__ import annotations
 
 import sqlite3
@@ -8,11 +12,13 @@ from services.storage import ensure_db
 
 
 def _conn():
+    """打开 app.db 连接（调用方负责关闭）。"""
     ensure_db()
     return sqlite3.connect(storage.DB_PATH)
 
 
 def ensure_kb_tables() -> None:
+    """创建 kb_meta / kb_files 表。"""
     with _conn() as conn:
         conn.executescript(
             """
@@ -37,6 +43,7 @@ def ensure_kb_tables() -> None:
 
 
 def get_kb_version(scope: str) -> str:
+    """读取某 scope 的知识库版本号。"""
     ensure_kb_tables()
     with _conn() as conn:
         row = conn.execute("SELECT kb_version FROM kb_meta WHERE scope = ?", (scope,)).fetchone()
@@ -44,6 +51,7 @@ def get_kb_version(scope: str) -> str:
 
 
 def bump_kb_version(scope: str) -> str:
+    """将 scope 版本加一，使查询缓存失效。"""
     ensure_kb_tables()
     cur = str(int(get_kb_version(scope) or "0") + 1)
     with _conn() as conn:
@@ -69,6 +77,7 @@ def upsert_kb_file(
     chunk_count: int,
     user_id: int | None = None,
 ) -> None:
+    """记录或更新某文件的内容哈希与分块数。"""
     ensure_kb_tables()
     with _conn() as conn:
         conn.execute(
@@ -87,6 +96,7 @@ def upsert_kb_file(
 
 
 def get_kb_file_hash(scope: str, path: str) -> str | None:
+    """读取已记录的文件哈希，用于增量跳过。"""
     ensure_kb_tables()
     with _conn() as conn:
         row = conn.execute(
@@ -97,6 +107,7 @@ def get_kb_file_hash(scope: str, path: str) -> str | None:
 
 
 def delete_kb_file(scope: str, path: str) -> None:
+    """删除某文件的元数据行。"""
     ensure_kb_tables()
     with _conn() as conn:
         conn.execute("DELETE FROM kb_files WHERE scope = ? AND path = ?", (scope, path))

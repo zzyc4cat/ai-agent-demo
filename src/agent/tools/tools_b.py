@@ -1,4 +1,6 @@
-"""简易计算与闪卡（Tools-B 子集）。"""
+"""
+Tools-B：AST 白名单计算器（限长度与幂嵌套）+ 间隔复习闪卡（SQLite，按用户）。
+"""
 from __future__ import annotations
 
 import ast
@@ -22,6 +24,7 @@ _OPS = {
 
 
 def _eval(node):
+    """递归计算 AST：仅允许数字常量与 + - * / ** 及一元负号。"""
     if isinstance(node, ast.Expression):
         return _eval(node.body)
     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
@@ -35,6 +38,7 @@ def _eval(node):
 
 @tool(description="精确计算数学表达式，如 2+3*4。禁止函数调用。")
 def calculator(expression: str) -> str:
+    """Agent 工具：安全计算四则与有限幂运算，禁止任意代码执行。"""
     try:
         expr = (expression or "").strip()
         if not expr or len(expr) > 200:
@@ -53,6 +57,7 @@ def calculator(expression: str) -> str:
 
 
 def _ensure_flashcards():
+    """若尚无 flashcards 表则创建（按用户隔离的间隔复习卡片）。"""
     ensure_db()
     with get_conn() as conn:
         conn.execute(
@@ -71,6 +76,7 @@ def _ensure_flashcards():
 
 @tool(description="添加闪卡。入参 front 正面问题，back 背面答案。")
 def flashcard_add(front: str, back: str) -> str:
+    """Agent 工具：为当前用户添加一张闪卡，默认次日可复习。"""
     _ensure_flashcards()
     uid = get_current_user_id()
     due = datetime.now().strftime("%Y-%m-%d")
@@ -84,6 +90,7 @@ def flashcard_add(front: str, back: str) -> str:
 
 @tool(description="列出当前用户到期闪卡。")
 def flashcard_due() -> str:
+    """Agent 工具：列出当前用户已到期的闪卡。"""
     _ensure_flashcards()
     uid = get_current_user_id()
     today = datetime.now().strftime("%Y-%m-%d")
@@ -99,6 +106,7 @@ def flashcard_due() -> str:
 
 @tool(description="复习反馈。入参 card_id；correct 为 true/false。")
 def flashcard_answer(card_id: int, correct: bool) -> str:
+    """Agent 工具：根据对错更新间隔天数与下次到期日。"""
     _ensure_flashcards()
     uid = get_current_user_id()
     with get_conn() as conn:

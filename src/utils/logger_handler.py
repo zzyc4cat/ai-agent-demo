@@ -1,5 +1,10 @@
-﻿"""
-日志工具：轮转文件 + contextvars 关联字段 + 统一事件名
+"""
+双通道日志：
+
+1. logs/agent.log — TimedRotatingFileHandler，带 request_id/user/session/thread/model
+2. 根目录 DEBUG_LOG.md — 人读阶段记录，超体积裁剪「运行时记录」区
+
+log_event() 是业务埋点入口；敏感字段名会走 redact_mapping。
 """
 from __future__ import annotations
 
@@ -31,6 +36,7 @@ def bind_log_context(
     thread_id: str | None = None,
     model_id: str | None = None,
 ) -> None:
+    """把请求/用户/会话/线程/模型写入日志 ContextVar。"""
     if request_id is not None:
         _request_id.set(request_id)
     if user_id is not None:
@@ -44,6 +50,7 @@ def bind_log_context(
 
 
 def clear_log_context() -> None:
+    """清空日志上下文为占位符。"""
     _request_id.set("-")
     _user_id.set("-")
     _session_id.set("-")
@@ -52,6 +59,7 @@ def clear_log_context() -> None:
 
 
 def _load_logging_config() -> dict[str, Any]:
+    """读 logging.yml 并叠加环境变量覆盖。"""
     path = get_abs_path("config/logging.yml")
     cfg: dict[str, Any] = {
         "level": "INFO",
@@ -81,6 +89,7 @@ def _load_logging_config() -> dict[str, Any]:
 
 class ContextFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
+        """在文本日志行中注入请求上下文。"""
         record.request_id = _request_id.get()
         record.user_id = _user_id.get()
         record.session_id = _session_id.get()
@@ -91,6 +100,7 @@ class ContextFormatter(logging.Formatter):
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
+        """把日志格式化为含上下文的 JSON。"""
         payload = {
             "ts": self.formatTime(record, "%Y-%m-%d %H:%M:%S"),
             "level": record.levelname,
@@ -112,6 +122,7 @@ def get_logger(
     console_level: int | None = None,
     file_level: int = logging.DEBUG,
 ) -> logging.Logger:
+    """配置控制台与按日轮转的文件日志。"""
     cfg = _load_logging_config()
     level_name = str(cfg.get("level", "INFO")).upper()
     level = getattr(logging, level_name, logging.INFO)
@@ -158,6 +169,7 @@ logger = get_logger()
 
 
 def _truncate(value: Any, limit: int = 200) -> Any:
+    """把过长字段截断以免日志膨胀。"""
     text = str(value)
     if len(text) <= limit:
         return value if not isinstance(value, str) else text
@@ -168,6 +180,7 @@ _SECRET_KEYS = re.compile(r"(password|secret|api[_-]?key|token|authorization)", 
 
 
 def redact_mapping(data: dict[str, Any] | None) -> dict[str, Any]:
+    """把密钥类字段名替换为 ***。"""
     if not data:
         return {}
     out: dict[str, Any] = {}
@@ -180,6 +193,7 @@ def redact_mapping(data: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def should_log_prompt() -> bool:
+    """是否允许把 Prompt 正文写入日志。"""
     return bool(_load_logging_config().get("log_prompt"))
 
 
@@ -190,6 +204,7 @@ _debug_log_lock = __import__("threading").Lock()
 
 
 def _debug_log_path() -> str:
+    """返回根目录 DEBUG_LOG.md 路径。"""
     return get_abs_path("DEBUG_LOG.md")
 
 
@@ -226,6 +241,7 @@ def append_debug_log(stage: str, **fields: Any) -> None:
 
 
 def _maybe_trim_debug_log(path: str, cfg: dict[str, Any]) -> None:
+    """超体积时只裁剪运行时记录区。"""
     max_chars = int(cfg.get("debug_log_max_chars", 400000))
     keep_chars = int(cfg.get("debug_log_keep_chars", 240000))
     try:

@@ -1,4 +1,4 @@
-﻿"""API /health 冒烟（不启动长驻服务：用 TestClient）。"""
+"""API /health 冒烟（不启动长驻服务：用 TestClient）。"""
 from __future__ import annotations
 
 import os
@@ -11,6 +11,7 @@ sys.path.insert(0, SRC)
 
 
 def test_health_three_rounds():
+    """连续请求 /health，确认 API 可导入且返回 ok。"""
     from fastapi.testclient import TestClient
     import api_server
 

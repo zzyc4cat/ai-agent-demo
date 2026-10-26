@@ -1,4 +1,4 @@
-﻿"""DEBUG_LOG 追加与裁剪。"""
+"""DEBUG_LOG 追加与裁剪。"""
 from __future__ import annotations
 
 import os
@@ -11,6 +11,7 @@ sys.path.insert(0, SRC)
 
 
 def test_append_debug_log_writes(tmp_path, monkeypatch):
+    """append_debug_log 会向 DEBUG_LOG.md 追加内容。"""
     import utils.logger_handler as lh
 
     path = tmp_path / "DEBUG_LOG.md"
@@ -35,6 +36,7 @@ def test_append_debug_log_writes(tmp_path, monkeypatch):
 
 
 def test_trim_debug_log_keeps_anchor(tmp_path, monkeypatch):
+    """裁剪日志时保留运行时锚点。"""
     import utils.logger_handler as lh
 
     path = tmp_path / "DEBUG_LOG.md"
@@ -53,6 +55,7 @@ def test_trim_debug_log_keeps_anchor(tmp_path, monkeypatch):
 
 
 def test_root_docs_only_three_guides():
+    """根目录只保留 README/DEBUG/DEBUG_LOG 三份说明。"""
     root_mds = {
         f
         for f in os.listdir(ROOT)

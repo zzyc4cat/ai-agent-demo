@@ -1,46 +1,42 @@
 ﻿"""
-文件处理工具类
+语料文件工具：MD5、按后缀递归列举、用 LangChain Loader 读成 Document。
+
+供 VectorStoreService 入库使用。MD5 为遗留辅助；主路径增量去重用 content_hash。
 """
-import os
+from __future__ import annotations
+
 import hashlib
-from utils.logger_handler import logger
+import os
+
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_core.documents import Document
-from langchain_community.document_loaders import  PyPDFLoader, TextLoader
 
-def get_file_md5_hex(filepath:str):
-    """获取文件的md5的十六进制字符串，用来做去重判断"""
+from utils.logger_handler import logger
+
+
+def get_file_md5_hex(filepath: str) -> str | None:
+    """计算文件 MD5 十六进制串；路径不是普通文件时返回 None。"""
     if not os.path.isfile(filepath):
-        logger.error(f"[md5计算]文件{filepath}不存在")
-        return
+        logger.error("[md5计算]不是有效文件：%s", filepath)
+        return None
 
-    if not os.path.isfile(filepath):
-        logger.error(f"[md5计算]路径{filepath}不是文件")
-        return
-
-    md5_obj=hashlib.md5()
-
-    chunk_size=4096     # 4KB分片，避免文件过大爆内存
+    md5_obj = hashlib.md5()
+    chunk_size = 4096  # 分片避免大文件占满内存
     try:
-        with open(filepath,'rb') as f:  # 必须二进制读取
+        with open(filepath, "rb") as f:
             while chunk := f.read(chunk_size):
                 md5_obj.update(chunk)
-                """
-                chunk = f.read(chunk_size)
-                while chunk :
-                    md5_obj.update(chunk)
-                    chunk = f.read(chunk_size)
-                """
-            md5_hex=md5_obj.hexdigest()
-            return md5_hex
+        return md5_obj.hexdigest()
     except Exception as e:
-        logger.error(f"计算文件{filepath}md5是吧{str(e)}")
+        logger.error("计算文件 %s 的 md5 失败：%s", filepath, e)
+        return None
 
 
-def listdir_with_allowed_type(path: str, allowed_type: tuple[str]):
-    """返回文件夹内的文件列表（允许的文件后缀，递归子目录）。"""
+def listdir_with_allowed_type(path: str, allowed_type: tuple[str, ...]):
+    """递归列出目录中后缀匹配的文件（allowed_type 如 txt/pdf/md，可带或不带点）。"""
     files: list[str] = []
     if not os.path.isdir(path):
-        logger.error(f"[listdir_with_allowed_type]{path}不是文件夹")
+        logger.error("[listdir_with_allowed_type]%s 不是文件夹", path)
         return tuple()
 
     suffixes = []
@@ -63,17 +59,17 @@ def listdir_with_allowed_type(path: str, allowed_type: tuple[str]):
 
 
 def pdf_loader(filepath: str, password: str | None = None) -> list[Document]:
-    """加载 pdf 文档。"""
+    """加载 PDF 为 LangChain Document 列表。"""
     if password:
         return PyPDFLoader(filepath, password=password).load()
     return PyPDFLoader(filepath).load()
 
 
 def txt_loader(filepath: str) -> list[Document]:
-    """加载 txt 文档。"""
+    """按 UTF-8 加载纯文本。"""
     return TextLoader(filepath, encoding="utf-8").load()
 
 
 def md_loader(filepath: str) -> list[Document]:
-    """加载 markdown 文档。"""
+    """Markdown 与 txt 共用 TextLoader（切分阶段再用 MarkdownHeaderTextSplitter）。"""
     return TextLoader(filepath, encoding="utf-8").load()

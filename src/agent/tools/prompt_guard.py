@@ -1,5 +1,9 @@
 """
-提示词注入防护（轻量规则）
+提示词注入防护（轻量正则，见 config/prompt_guard.yml）。
+
+check()：泄露系统提示 → refuse_leak；忽略规则/越狱话术 → remind_ignore。
+wrap_untrusted()：给 RAG/工具输出加标记，要求模型当数据不当指令。
+不能替代工具层硬限制（SSRF、沙箱路径）。
 """
 from __future__ import annotations
 
@@ -23,6 +27,7 @@ class GuardResult:
 
 class PromptGuard:
     def __init__(self, config: dict | None = None):
+        """从 prompt_guard.yml 编译泄露/忽略规则正则。"""
         self.config = config or prompt_guard_config or {}
         self.enabled = bool(self.config.get("enabled", True))
         self._leak = [re.compile(p, re.I) for p in (self.config.get("leak_patterns") or [])]
@@ -37,6 +42,7 @@ class PromptGuard:
         )
 
     def check(self, user_text: str) -> GuardResult:
+        """检查用户原文：允许 / 拒答泄露 / 注入安全提醒后继续。"""
         if not self.enabled or not user_text:
             return GuardResult(action="allow")
         for pattern in self._leak:

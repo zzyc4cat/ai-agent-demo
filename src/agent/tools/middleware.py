@@ -1,4 +1,13 @@
-﻿"""中间件：工具监控、模型前日志、动态 Prompt（skill 白名单）、提示词防护钩子"""
+﻿"""
+LangGraph 中间件（挂到 create_agent）。
+
+- monitor_tool：记录工具耗时；异常转为 ToolMessage，避免整图崩溃
+- log_before_model：调用 LLM 前打日志
+- skill_prompt_switch：按用户当前 skill 加载 prompts/skills 或主 Prompt
+
+技能状态存在 agent_tools 模块字典（非 ContextVar）：LangChain 工具常在
+copy_context 中执行，ContextVar 写不回主循环。
+"""
 from __future__ import annotations
 
 import time
@@ -36,6 +45,7 @@ def monitor_tool(
     request: ToolCallRequest,
     handler: Callable[[ToolCallRequest], ToolMessage | Command],
 ) -> ToolMessage | Command:
+    """包装每次工具调用：打点耗时；失败时返回错误 ToolMessage 而不中断整轮。"""
     name = request.tool_call.get("name", "?")
     args = redact_mapping(request.tool_call.get("args") or {})
     log_event("tool.start", tool=name, args=args)
@@ -61,6 +71,7 @@ def monitor_tool(
 
 @before_model
 def log_before_model(state: AgentState, runtime: Runtime):
+    """每次调用聊天模型前记录消息条数（DEBUG 下记录末条预览）。"""
     messages = state.get("messages") or []
     logger.info("[log_before_model]即将调用模型，带有%d条消息", len(messages))
     if messages:
@@ -74,10 +85,10 @@ def log_before_model(state: AgentState, runtime: Runtime):
 
 @dynamic_prompt
 def skill_prompt_switch(request: ModelRequest):
-    """优先 ContextVar（set_skill 可中途切换），否则 runtime.context['skill']。"""
+    """读取当前用户 skill；非法或缺文件则回退 main_prompt。"""
     from agent.tools.agent_tools import get_active_skill
 
-    # ContextVar 由 execute_stream / set_skill 写入；缺省时回退 runtime.context
+    # 优先 set_skill / execute_stream 写入的按用户状态；否则用本轮 context
     skill = get_active_skill()
     if not skill or skill == "default":
         ctx = {}

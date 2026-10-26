@@ -1,4 +1,4 @@
-﻿"""Phase 1：扫地机器料已清除；sample 与 Skills 骨架就绪。"""
+"""Phase 1：扫地机器料已清除；sample 与 Skills 骨架就绪。"""
 from __future__ import annotations
 
 import os
@@ -11,6 +11,7 @@ sys.path.insert(0, SRC)
 
 
 def test_no_vacuum_corpus_in_data_root():
+    """data 根目录不应残留吸尘器语料。"""
     data = os.path.join(ROOT, "data")
     forbidden_substrings = ["扫地", "扫拖", "回充", "尘盒"]
     for dirpath, _, files in os.walk(data):
@@ -29,6 +30,7 @@ def test_no_vacuum_corpus_in_data_root():
 
 
 def test_sample_guides_exist_and_rigorous():
+    """示例知识库指南文件存在且内容严谨。"""
     sample = os.path.join(ROOT, "data", "sample")
     assert os.path.isdir(sample)
     guide = os.path.join(sample, "guides", "01_agent_user_guide.txt")
@@ -39,6 +41,7 @@ def test_sample_guides_exist_and_rigorous():
 
 
 def test_skills_a_prompt_files():
+    """Skills-A 的 Prompt 文件齐全。"""
     skills_dir = os.path.join(ROOT, "prompts", "skills")
     required = [
         "daily_briefing.txt",
@@ -57,6 +60,7 @@ def test_skills_a_prompt_files():
 
 
 def test_chroma_points_to_sample():
+    """chroma.yml 数据路径指向 sample。"""
     from utils.config_handler import load_chroma_config
 
     cfg = load_chroma_config()
@@ -64,6 +68,7 @@ def test_chroma_points_to_sample():
 
 
 def test_main_prompt_priority_and_unknown():
+    """主 Prompt 含优先级与不知道策略。"""
     from utils.prompt_loader import load_system_prompts
 
     text = load_system_prompts()

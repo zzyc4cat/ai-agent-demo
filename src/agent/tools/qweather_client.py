@@ -1,4 +1,8 @@
-"""和风天气（QWeather）客户端：城市查询 + 实时天气。"""
+"""
+和风天气 HTTP 客户端。Key/Host 来自环境变量（Host 去掉 https://）。
+
+缺 Key 或 Host 时返回中文说明，不编造气温。由工具 get_weather 调用。
+"""
 from __future__ import annotations
 
 import os
@@ -14,20 +18,24 @@ except Exception:
 
 
 def _api_key() -> str:
+    """读取和风 API Key 环境变量。"""
     return (os.getenv("QWEATHER_API_KEY") or os.getenv("HEWEATHER_API_KEY") or "").strip()
 
 
 def _api_host() -> str:
+    """读取并规范化 API Host（去掉协议）。"""
     raw = (os.getenv("QWEATHER_API_HOST") or os.getenv("HEWEATHER_API_HOST") or "").strip()
     raw = raw.removeprefix("https://").removeprefix("http://").strip().strip("/")
     return raw
 
 
 def _headers(key: str) -> dict[str, str]:
+    """构造和风请求头。"""
     return {"X-QW-Api-Key": key, "Accept-Encoding": "gzip"}
 
 
 def _get_json(url: str, *, key: str, params: dict[str, Any], timeout: float = 15.0) -> dict[str, Any]:
+    """GET 天气接口并解析 JSON 对象。"""
     with httpx.Client(timeout=timeout) as client:
         # 同时带 header 与 query key，兼容新旧凭据
         q = dict(params)
@@ -64,6 +72,7 @@ def lookup_city(city: str, *, key: str, host: str) -> dict[str, str] | None:
 
 
 def weather_now(location_id: str, *, key: str, host: str) -> dict[str, Any]:
+    """按 Location ID 查询实时天气 now 字段。"""
     url = f"https://{host}/v7/weather/now"
     data = _get_json(url, key=key, params={"location": location_id, "lang": "zh"})
     code = str(data.get("code", ""))
@@ -76,6 +85,7 @@ def weather_now(location_id: str, *, key: str, host: str) -> dict[str, Any]:
 
 
 def format_now(city_info: dict[str, str], now: dict[str, Any]) -> str:
+    """把城市信息与 now 拼成中文句子。"""
     region = " / ".join(x for x in (city_info.get("adm1"), city_info.get("adm2"), city_info.get("name")) if x)
     return (
         f"{region} 实时天气：{now.get('text', '?')}，"

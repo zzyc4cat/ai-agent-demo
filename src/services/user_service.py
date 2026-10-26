@@ -1,4 +1,8 @@
-"""本地用户：创建、切换、上次用户。"""
+"""
+本地用户：用户名校验、创建、切换、last_user、偏好。
+
+Streamlit 与 FastAPI 都通过 switch_or_create 解析身份；这不是密码认证。
+"""
 from __future__ import annotations
 
 import re
@@ -10,10 +14,12 @@ _USERNAME_RE = re.compile(r"^[\w\u4e00-\u9fff][\w\u4e00-\u9fff\- ]{0,31}$")
 
 
 def _normalize(name: str) -> str:
+    """去掉用户名首尾空白。"""
     return (name or "").strip()
 
 
 def validate_username(username: str) -> str:
+    """校验用户名长度与字符集。"""
     name = _normalize(username)
     if len(name) < 2 or len(name) > 32:
         raise ValueError("用户名长度须为 2–32 个字符")
@@ -23,6 +29,7 @@ def validate_username(username: str) -> str:
 
 
 def create_user(username: str) -> dict:
+    """注册新用户并记为 last_user。"""
     name = validate_username(username)
     ensure_db()
     with get_conn() as conn:
@@ -43,6 +50,7 @@ def create_user(username: str) -> dict:
 
 
 def list_users() -> list[dict]:
+    """列出全部本地用户。"""
     ensure_db()
     with get_conn() as conn:
         rows = conn.execute("SELECT id, username, created_at FROM users ORDER BY id").fetchall()
@@ -50,6 +58,7 @@ def list_users() -> list[dict]:
 
 
 def get_user(user_id: int) -> dict | None:
+    """按主键取用户。"""
     with get_conn() as conn:
         row = conn.execute(
             "SELECT id, username, created_at FROM users WHERE id = ?",
@@ -59,6 +68,7 @@ def get_user(user_id: int) -> dict | None:
 
 
 def find_user_by_name(username: str) -> dict | None:
+    """按用户名不区分大小写查找。"""
     name = _normalize(username)
     with get_conn() as conn:
         row = conn.execute(
@@ -69,6 +79,7 @@ def find_user_by_name(username: str) -> dict | None:
 
 
 def set_last_user(user_id: int) -> None:
+    """把 last_user_id 写入 meta 表。"""
     with get_conn() as conn:
         conn.execute(
             "INSERT OR REPLACE INTO meta(key, value) VALUES ('last_user_id', ?)",
@@ -77,6 +88,7 @@ def set_last_user(user_id: int) -> None:
 
 
 def get_last_user() -> dict | None:
+    """读取上次登录用户。"""
     ensure_db()
     with get_conn() as conn:
         row = conn.execute("SELECT value FROM meta WHERE key = 'last_user_id'").fetchone()
@@ -96,6 +108,7 @@ def switch_or_create(username: str) -> dict:
 
 
 def set_preference(user_id: int, key: str, value: str) -> None:
+    """写入用户偏好键值。"""
     with get_conn() as conn:
         conn.execute(
             "INSERT OR REPLACE INTO preferences(user_id, key, value) VALUES (?, ?, ?)",
@@ -104,6 +117,7 @@ def set_preference(user_id: int, key: str, value: str) -> None:
 
 
 def get_preference(user_id: int, key: str, default: str | None = None) -> str | None:
+    """读取用户偏好，缺省返回 default。"""
     with get_conn() as conn:
         row = conn.execute(
             "SELECT value FROM preferences WHERE user_id = ? AND key = ?",

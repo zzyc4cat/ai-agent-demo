@@ -1,4 +1,8 @@
-"""本地 BM25 倒排索引（按 collection 落盘）。"""
+"""
+BM25 倒排（rank_bm25），按 collection 序列化到 storage/bm25_index/{name}.pkl。
+
+pkl 视为本机可信文件。极少文档时 Okapi 分全 0 则回退词重叠计数。
+"""
 from __future__ import annotations
 
 import pickle
@@ -18,6 +22,7 @@ except ImportError:  # pragma: no cover
 
 class Bm25Index:
     def __init__(self, collection: str) -> None:
+        """为指定 collection 加载或创建磁盘 BM25 索引。"""
         self.collection = collection
         self.docs: list[Document] = []
         self._tokens: list[list[str]] = []
@@ -27,6 +32,7 @@ class Bm25Index:
         self.load()
 
     def load(self) -> None:
+        """从 pkl 恢复文档与词表并重建 Okapi。"""
         if not self.path.exists():
             return
         try:
@@ -40,16 +46,19 @@ class Bm25Index:
             self._bm25 = None
 
     def save(self) -> None:
+        """把文档与分词结果序列化到磁盘。"""
         payload = {"docs": self.docs, "tokens": self._tokens}
         self.path.write_bytes(pickle.dumps(payload, protocol=pickle.HIGHEST_PROTOCOL))
 
     def _rebuild(self) -> None:
+        """用当前词表重建 BM25Okapi 对象。"""
         if BM25Okapi is None or not self._tokens:
             self._bm25 = None
             return
         self._bm25 = BM25Okapi(self._tokens)
 
     def clear(self) -> None:
+        """清空内存索引并删除 pkl 文件。"""
         self.docs = []
         self._tokens = []
         self._bm25 = None
@@ -57,6 +66,7 @@ class Bm25Index:
             self.path.unlink()
 
     def remove_by_source(self, source_path: str) -> None:
+        """删除指定 source_path 的全部分块。"""
         keep_docs = []
         keep_tok = []
         for d, t in zip(self.docs, self._tokens):
@@ -68,6 +78,7 @@ class Bm25Index:
         self._rebuild()
 
     def add_documents(self, documents: list[Document]) -> None:
+        """追加文档、分词、重建并落盘。"""
         for d in documents:
             self.docs.append(d)
             self._tokens.append(tokenize(d.page_content or ""))
@@ -75,6 +86,7 @@ class Bm25Index:
         self.save()
 
     def search(self, query: str, k: int = 20) -> list[tuple[Document, float]]:
+        """按查询返回 Top-k (文档, 分数)；无正分则词重叠回退。"""
         if not self.docs:
             return []
         q = tokenize(query)

@@ -1,10 +1,11 @@
-"""笔记与记忆（按 user_id）。"""
+"""笔记（LIKE 搜索）与长期记忆片段，均按 user_id 隔离。"""
 from __future__ import annotations
 
 from services.storage import get_conn, ensure_db
 
 
 def add_note(user_id: int, title: str, body: str) -> dict:
+    """为用户新增一条笔记。"""
     title = (title or "").strip() or "未命名笔记"
     body = (body or "").strip()
     if not body:
@@ -19,6 +20,7 @@ def add_note(user_id: int, title: str, body: str) -> dict:
 
 
 def search_notes(user_id: int, query: str, limit: int = 10) -> list[dict]:
+    """按标题/正文 LIKE 搜索当前用户笔记。"""
     q = f"%{(query or '').strip()}%"
     with get_conn() as conn:
         rows = conn.execute(
@@ -31,6 +33,7 @@ def search_notes(user_id: int, query: str, limit: int = 10) -> list[dict]:
 
 
 def add_memory(user_id: int, kind: str, content: str) -> dict:
+    """写入一条长期记忆。"""
     content = (content or "").strip()
     if not content:
         raise ValueError("记忆内容不能为空")
@@ -44,6 +47,7 @@ def add_memory(user_id: int, kind: str, content: str) -> dict:
 
 
 def list_memories(user_id: int, kind: str | None = None, limit: int = 20) -> list[dict]:
+    """列出记忆，可按 kind 过滤。"""
     with get_conn() as conn:
         if kind:
             rows = conn.execute(

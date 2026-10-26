@@ -1,4 +1,4 @@
-﻿"""Phase 2：用户隔离与任务/笔记存储。"""
+"""Phase 2：用户隔离与任务/笔记存储。"""
 from __future__ import annotations
 
 import os
@@ -14,6 +14,7 @@ sys.path.insert(0, SRC)
 
 @pytest.fixture()
 def fresh_db(tmp_path, monkeypatch):
+    """fixture：使用临时 SQLite，避免污染开发库。"""
     db = tmp_path / "test.db"
     import services.storage as storage
 
@@ -23,6 +24,7 @@ def fresh_db(tmp_path, monkeypatch):
 
 
 def test_user_create_switch_isolation(fresh_db):
+    """用户创建/切换与数据隔离。"""
     from services import user_service, task_service
 
     a = user_service.create_user("Alice")
@@ -39,6 +41,7 @@ def test_user_create_switch_isolation(fresh_db):
 
 
 def test_notes_and_memory(fresh_db):
+    """笔记与记忆按用户隔离。"""
     from services import user_service, note_service
 
     u = user_service.create_user("Carol")
@@ -51,6 +54,7 @@ def test_notes_and_memory(fresh_db):
 
 
 def test_thread_id_format():
+    """Checkpointer 线程 id 含用户与会话。"""
     from agent.react_agent import ReactAgent
 
     agent = object.__new__(ReactAgent)

@@ -1,4 +1,9 @@
-"""查询结果缓存：L1=检索文档，L2=最终答案；精确 normalize 命中。"""
+"""
+查询缓存。L1=序列化检索文档，L2=最终答案或「不知道」。
+
+Key 含 normalize 后的 query、user、kb_version、corpus、layer；L2 另含 model_id。
+内存 LRU + 可选 SQLite 落盘（随 app.db）。
+"""
 from __future__ import annotations
 
 import json
@@ -27,6 +32,7 @@ class CacheEntry:
 
 class QueryCache:
     def __init__(self) -> None:
+        """读取 TTL/容量配置并可选建 SQLite 表。"""
         cfg = (get_runtime().get("query_cache") or {})
         self.enabled = bool(cfg.get("enabled", True))
         self.max_entries = int(cfg.get("max_entries_per_user", 200))
@@ -41,6 +47,7 @@ class QueryCache:
             self._ensure_table()
 
     def _ensure_table(self) -> None:
+        """创建 rag_query_cache 持久化表。"""
         with sqlite3.connect(storage.DB_PATH) as conn:
             conn.execute(
                 """
@@ -66,6 +73,7 @@ class QueryCache:
         model_id: str = "",
         layer: str = "l1",
     ) -> str:
+        """拼 L1/L2 缓存键（含用户、语料版本、模型 id）。"""
         nq = normalize_query(query)
         uid = str(user_id) if user_id is not None else "anon"
         base = f"{layer}|{uid}|{corpus_scope}|{kb_version}|{nq}"
@@ -74,11 +82,13 @@ class QueryCache:
         return base
 
     def _bucket(self, user_scope: str) -> OrderedDict[str, CacheEntry]:
+        """取某用户作用域下的内存 LRU 字典。"""
         if user_scope not in self._mem:
             self._mem[user_scope] = OrderedDict()
         return self._mem[user_scope]
 
     def _purge(self, bucket: OrderedDict[str, CacheEntry]) -> None:
+        """删除过期项并按容量踢出最旧条目。"""
         now = time.time()
         dead = [k for k, v in bucket.items() if v.expire_at <= now]
         for k in dead:
@@ -87,6 +97,7 @@ class QueryCache:
             bucket.popitem(last=False)
 
     def get(self, key: str, user_scope: str) -> CacheEntry | None:
+        """先内存后 SQLite 查找未过期缓存。"""
         if not self.enabled:
             return None
         with _LOCK:
@@ -108,6 +119,7 @@ class QueryCache:
             return None
 
     def set(self, key: str, user_scope: str, kind: str, payload: Any, ttl: float) -> None:
+        """写入内存并可选持久化。"""
         if not self.enabled:
             return
         ent = CacheEntry(kind=kind, payload=payload, expire_at=time.time() + ttl)
@@ -120,6 +132,7 @@ class QueryCache:
                 self._db_set(key, user_scope, ent)
 
     def invalidate_user(self, user_id: int | None) -> None:
+        """清空某用户（或匿名）全部查询缓存。"""
         scope = f"u:{user_id}" if user_id is not None else "u:anon"
         with _LOCK:
             self._mem.pop(scope, None)
@@ -130,6 +143,7 @@ class QueryCache:
         log_event("rag.cache", action="invalidate", user_scope=scope)
 
     def _db_get(self, key: str) -> CacheEntry | None:
+        """从 SQLite 读取一条缓存。"""
         with sqlite3.connect(storage.DB_PATH) as conn:
             row = conn.execute(
                 "SELECT kind, payload, expire_at FROM rag_query_cache WHERE cache_key = ?",
@@ -145,6 +159,7 @@ class QueryCache:
         return CacheEntry(kind=kind, payload=payload, expire_at=float(expire_at))
 
     def _db_set(self, key: str, user_scope: str, ent: CacheEntry) -> None:
+        """把缓存条目写入 SQLite。"""
         payload_s = json.dumps(ent.payload, ensure_ascii=False)
         with sqlite3.connect(storage.DB_PATH) as conn:
             conn.execute(
@@ -161,6 +176,7 @@ _cache: QueryCache | None = None
 
 
 def get_query_cache() -> QueryCache:
+    """返回进程内 QueryCache 单例。"""
     global _cache
     if _cache is None:
         _cache = QueryCache()

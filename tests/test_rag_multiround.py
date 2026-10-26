@@ -1,4 +1,4 @@
-﻿"""多轮回归：缓存命中、检索链路、配置与入库 CLI 联通性（尽量不依赖外网 LLM）。"""
+"""多轮回归：缓存命中、检索链路、配置与入库 CLI 联通性（尽量不依赖外网 LLM）。"""
 from __future__ import annotations
 
 import os
@@ -33,12 +33,15 @@ def test_round_cache_then_retrieve_flow(tmp_path, monkeypatch):
     calls = {"n": 0}
 
     def fake_retrieve(query, user_id=None):
+        """测试替身：伪造检索结果。"""
         calls["n"] += 1
         return [Document(page_content="番茄二十五分钟", metadata={"source_path": "g.txt", "chunk_id": "1"})]
 
     def fake_chain():
+        """测试替身：伪造 LLM 链。"""
         class C:
             def invoke(self, d):
+                """测试替身：返回固定字符串。"""
                 return "专注时长约二十五分钟（资料1）"
 
         return C()
@@ -59,6 +62,7 @@ def test_round_cache_then_retrieve_flow(tmp_path, monkeypatch):
 
 
 def test_round_empty_docs_returns_unknown(tmp_path, monkeypatch):
+    """检索为空时应得到不知道。"""
     import services.storage as storage
     import rag.query_cache as qc
     from rag.query_cache import QueryCache
@@ -79,6 +83,7 @@ def test_round_empty_docs_returns_unknown(tmp_path, monkeypatch):
 
 
 def test_eval_fixture_schema():
+    """评测 jsonl 字段符合约定。"""
     import json
 
     path = os.path.join(ROOT, "tests", "fixtures", "rag_eval.jsonl")

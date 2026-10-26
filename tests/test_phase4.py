@@ -1,4 +1,4 @@
-﻿"""Phase 4：Skills-A 提示词与白名单。"""
+"""Phase 4：Skills-A 提示词与白名单。"""
 from __future__ import annotations
 
 import os
@@ -11,6 +11,7 @@ sys.path.insert(0, SRC)
 
 
 def test_all_skills_a_loadable():
+    """全部 Skills-A 文本可加载。"""
     from agent.tools.middleware import SKILL_WHITELIST
     from utils.prompt_loader import load_skill_prompt, load_system_prompts
 
@@ -32,6 +33,7 @@ def test_all_skills_a_loadable():
 
 
 def test_set_skill_tool_rejects_unknown(tmp_path, monkeypatch):
+    """set_skill 拒绝未知技能名。"""
     import services.storage as storage
     from services import user_service
     from agent.tools import agent_tools

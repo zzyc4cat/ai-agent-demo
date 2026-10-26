@@ -1,4 +1,4 @@
-﻿"""UI 优化 1–5 验收测试。"""
+"""UI 优化 1–5 验收测试。"""
 from __future__ import annotations
 
 import os
@@ -13,6 +13,7 @@ sys.path.insert(0, SRC)
 
 
 def test_opt1_caption_no_system_hint_on_page():
+    """页面说明不泄露系统提示细节。"""
     text = open(os.path.join(ROOT, "app.py"), encoding="utf-8").read()
     assert 'st.caption("生活 / 工作 / 学习")' in text
     assert "系统提示优先" not in text.split("st.caption")[1].split("\n")[0]
@@ -23,6 +24,7 @@ def test_opt1_caption_no_system_hint_on_page():
 
 
 def test_opt2_switch_user_flow_no_inline_add_when_logged_in():
+    """已登录时切换用户流程不内联新建。"""
     text = open(os.path.join(ROOT, "app.py"), encoding="utf-8").read()
     assert "或输入新用户名以添加" not in text
     assert 'st.button("添加并切换"' not in text
@@ -32,6 +34,7 @@ def test_opt2_switch_user_flow_no_inline_add_when_logged_in():
 
 
 def test_opt2_chat_history_persist(tmp_path, monkeypatch):
+    """聊天历史可落库再读回。"""
     import services.storage as storage
     from services import user_service, chat_service
 
@@ -50,6 +53,7 @@ def test_opt2_chat_history_persist(tmp_path, monkeypatch):
 
 
 def test_opt3_new_chat_and_history_ui():
+    """新对话与历史列表相关源码存在。"""
     text = open(os.path.join(ROOT, "app.py"), encoding="utf-8").read()
     assert 'st.button("新对话"' in text
     assert "最近" in text
@@ -58,6 +62,7 @@ def test_opt3_new_chat_and_history_ui():
 
 
 def test_opt4_chinese_mode_and_skills():
+    """中文模式名与技能选项存在。"""
     text = open(os.path.join(ROOT, "app.py"), encoding="utf-8").read()
     assert '"自动": "auto"' in text or "'自动': 'auto'" in text
     assert "手动" in text
@@ -99,6 +104,7 @@ def test_skill_label_maps_to_internal_id_on_change():
 
 
 def test_opt5_web_search_duckduckgo_available():
+    """web_search 走 DuckDuckGo 路径。"""
     from agent.tools.agent_tools import web_search, fetch_webpage, TOOLS_A
 
     names = {t.name for t in TOOLS_A}
@@ -114,6 +120,7 @@ def test_opt5_web_search_duckduckgo_available():
 
 
 def test_opt5_stream_hides_untrusted_logic():
+    """流式展示会隐藏 UNTRUSTED 标记。"""
     src = open(os.path.join(ROOT, "src", "agent", "react_agent.py"), encoding="utf-8").read()
     assert "ToolMessage" in src
     assert "UNTRUSTED_DATA" in src

@@ -1,4 +1,13 @@
-﻿"""Agent 主体：Tools-A、用户隔离、护栏、Checkpointer、Auto 换模。"""
+﻿"""
+LangGraph ReAct Agent 封装。
+
+被 app.py（Streamlit）与 api_server 调用。一轮对话：
+1. 解析 user_id → SQLite 主键，写入工具 ContextVar
+2. 白名单 skill 写入「按用户」的运行时状态
+3. PromptGuard：泄露则直接拒答；忽略规则则在用户消息前加安全提醒
+4. stream_mode=values 过滤 ToolMessage / 中间 tool_calls，只 yield 最终文本
+5. Auto 额度错误则换模重建 agent 并重试本轮；手动模式不换模
+"""
 from __future__ import annotations
 
 import uuid
@@ -33,7 +42,9 @@ def _make_checkpointer():
 
 
 class ReactAgent:
+    """单用户会话上的 ReAct 循环；thread_id = {user_pk}:{conversation_id}。"""
     def __init__(self, *, model_mode: str = "auto", manual_model_id: str | None = None):
+        """按 Auto/手动模式构建 LangGraph Agent，并挂上 SQLite/内存 Checkpointer。"""
         self.model_mode = model_mode
         self.manual_model_id = manual_model_id
         self._exhausted: set[str] = set()
@@ -41,6 +52,7 @@ class ReactAgent:
         self._build_agent()
 
     def _build_agent(self) -> None:
+        """用当前模型与全部工具、中间件创建（或额度换模后重建）agent。"""
         chat_model, spec = get_model_router().get_chat_model(
             mode=self.model_mode,
             manual_model_id=self.manual_model_id,
@@ -57,6 +69,7 @@ class ReactAgent:
         )
 
     def _thread_id(self, user_id: str, conversation_id: str) -> str:
+        """拼 Checkpointer 线程键，保证不同用户/会话状态隔离。"""
         return f"{user_id}:{conversation_id}"
 
     def _resolve_user_pk(self, user_id: str | int) -> int:
@@ -90,6 +103,11 @@ class ReactAgent:
         skill: str = "default",
         request_id: str | None = None,
     ) -> Generator[str, None, None]:
+        """
+        执行一轮用户问题并逐步 yield 展示文本。
+
+        空最终答复时 yield「不知道」。异常不对用户回传堆栈。
+        """
         rid = request_id or uuid.uuid4().hex[:12]
         user_pk = self._resolve_user_pk(user_id)
         set_current_user_id(user_pk)

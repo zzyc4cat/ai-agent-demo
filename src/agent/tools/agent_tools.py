@@ -1,4 +1,9 @@
-﻿"""Tools-A：个人助手外部能力（按 contextvars 中的 user_id 隔离）。"""
+﻿"""
+Tools-A：检索、搜索、抓页、天气、时间、待办/笔记/记忆、沙箱、入库、切技能。
+
+当前用户存在 ContextVar；skill 存在进程内 dict（按 user_id）。
+工具返回一律 wrap_untrusted。沙箱根为 workspace/u{user_id}/。
+"""
 from __future__ import annotations
 
 import os
@@ -26,6 +31,7 @@ _rag: RagSummarizeService | None = None
 
 
 def _get_rag() -> RagSummarizeService:
+    """懒创建并复用 RagSummarizeService，避免每个工具调用都打开 Chroma。"""
     global _rag
     if _rag is None:
         _rag = RagSummarizeService()
@@ -33,10 +39,12 @@ def _get_rag() -> RagSummarizeService:
 
 
 def set_current_user_id(user_id: int) -> None:
+    """把当前请求的 SQLite 用户主键写入 ContextVar，供工具读取。"""
     _current_user_id.set(int(user_id))
 
 
 def get_current_user_id() -> int:
+    """读取当前用户主键；未登录则抛错，防止工具写到错误账户。"""
     uid = _current_user_id.get()
     if not uid:
         raise ValueError("当前无有效用户，请先创建或切换本地用户")
@@ -44,6 +52,7 @@ def get_current_user_id() -> int:
 
 
 def set_active_skill(skill: str, user_id: int | None = None) -> None:
+    """记录该用户当前 skill id，供 middleware 动态加载系统提示。"""
     name = (skill or "default").strip() or "default"
     uid = int(user_id) if user_id is not None else int(_current_user_id.get() or 0)
     with _skill_lock:
@@ -51,6 +60,7 @@ def set_active_skill(skill: str, user_id: int | None = None) -> None:
 
 
 def get_active_skill(user_id: int | None = None) -> str:
+    """读取该用户当前 skill；未设置则视为 default。"""
     uid = int(user_id) if user_id is not None else int(_current_user_id.get() or 0)
     with _skill_lock:
         return (_skill_by_user.get(uid) or "default").strip() or "default"
@@ -65,6 +75,7 @@ def _user_workspace_root() -> Path:
 
 
 def _safe_workspace_path(relative: str) -> Path:
+    """把相对路径解析到当前用户沙箱内；拒绝 ..、绝对路径与越界。"""
     rel = (relative or "").strip().replace("\\", "/")
     if not rel or rel.startswith("/") or ".." in rel.split("/"):
         raise ValueError("非法路径：禁止绝对路径与 ..")
@@ -78,6 +89,7 @@ def _safe_workspace_path(relative: str) -> Path:
 
 @tool(description="从示例/个人知识库检索并总结。依据不足时返回「不知道」。入参 query 为检索问题。")
 def rag_summarize(query: str) -> str:
+    """Agent 工具：对知识库做检索总结，结果标为不可信数据。"""
     uid = None
     try:
         uid = get_current_user_id()
@@ -89,11 +101,13 @@ def rag_summarize(query: str) -> str:
 
 @tool(description="网页搜索公开信息。入参 query 为检索词。返回若干条标题与摘要（不可信数据）。")
 def web_search(query: str) -> str:
+    """Agent 工具：DuckDuckGo 搜索，失败时可回退 Tavily。"""
     q = (query or "").strip()
     if not q:
         return wrap_untrusted("tool:web_search", "不知道：未提供检索词。")
 
     def _ddg_search() -> list[str]:
+        """调用 ddgs/duckduckgo-search，返回最多 5 条标题+链接+摘要。"""
         rows: list[str] = []
         try:
             from ddgs import DDGS  # 新包名
@@ -148,6 +162,7 @@ def web_search(query: str) -> str:
 
 @tool(description="抓取公开网页正文（纯文本摘要）。入参 url。禁止内网/本机地址。部分站点可能拦截抓取。")
 def fetch_webpage(url: str) -> str:
+    """Agent 工具：抓取公网页面纯文本；内网/本机 URL 由 ssrf_guard 拒绝。"""
     import re
 
     import httpx
@@ -196,6 +211,7 @@ def fetch_webpage(url: str) -> str:
 
 @tool(description="查询城市实时天气（和风天气）。入参 city 为城市名，如 上海、北京。")
 def get_weather(city: str) -> str:
+    """Agent 工具：按城市名查询和风实时天气。"""
     from agent.tools.qweather_client import query_city_weather
 
     return wrap_untrusted("tool:get_weather", query_city_weather(city))
@@ -203,6 +219,7 @@ def get_weather(city: str) -> str:
 
 @tool(description="返回当前本地日期时间（ISO 格式）与星期。无入参。")
 def datetime_now() -> str:
+    """Agent 工具：返回本机当前日期时间与星期。"""
     now = datetime.now().astimezone()
     text = now.strftime("%Y-%m-%d %H:%M:%S %Z %A")
     return wrap_untrusted("tool:datetime_now", text)
@@ -210,6 +227,7 @@ def datetime_now() -> str:
 
 @tool(description="新增待办。入参 title 必填；due_at 可选 YYYY-MM-DD；priority 可选 P0/P1/P2。")
 def task_add(title: str, due_at: str = "", priority: str = "") -> str:
+    """Agent 工具：为当前用户新增一条待办。"""
     uid = get_current_user_id()
     task = task_service.add_task(uid, title, due_at or None, priority or None)
     return wrap_untrusted("tool:task_add", str(task))
@@ -217,6 +235,7 @@ def task_add(title: str, due_at: str = "", priority: str = "") -> str:
 
 @tool(description="列出当前用户待办。status=open|done|all，默认 open。")
 def task_list(status: str = "open") -> str:
+    """Agent 工具：列出当前用户待办（open/done/all）。"""
     uid = get_current_user_id()
     rows = task_service.list_tasks(uid, status=status or "open")
     if not rows:
@@ -226,6 +245,7 @@ def task_list(status: str = "open") -> str:
 
 @tool(description="将待办标为完成。入参 task_id 为整数。")
 def task_complete(task_id: int) -> str:
+    """Agent 工具：将属于当前用户的待办标为完成。"""
     uid = get_current_user_id()
     ok = task_service.complete_task(uid, int(task_id))
     return wrap_untrusted("tool:task_complete", "ok" if ok else "不知道：未找到该待办或不属于当前用户")
@@ -233,6 +253,7 @@ def task_complete(task_id: int) -> str:
 
 @tool(description="写入笔记。入参 title 与 body。")
 def note_write(title: str, body: str) -> str:
+    """Agent 工具：写入当前用户笔记。"""
     uid = get_current_user_id()
     note = note_service.add_note(uid, title, body)
     return wrap_untrusted("tool:note_write", str({"id": note["id"], "title": note["title"]}))
@@ -240,6 +261,7 @@ def note_write(title: str, body: str) -> str:
 
 @tool(description="搜索当前用户笔记。入参 query。")
 def note_search(query: str) -> str:
+    """Agent 工具：在当前用户笔记中按关键词搜索。"""
     uid = get_current_user_id()
     hits = note_service.search_notes(uid, query)
     if not hits:
@@ -249,6 +271,7 @@ def note_search(query: str) -> str:
 
 @tool(description="写入长期记忆片段。入参 kind（如 preference/episodic）与 content。")
 def memory_set(kind: str, content: str) -> str:
+    """Agent 工具：写入一条长期记忆。"""
     uid = get_current_user_id()
     mem = note_service.add_memory(uid, kind, content)
     return wrap_untrusted("tool:memory_set", str(mem))
@@ -256,6 +279,7 @@ def memory_set(kind: str, content: str) -> str:
 
 @tool(description="读取长期记忆。入参 kind 可选；空则返回最近记忆。")
 def memory_get(kind: str = "") -> str:
+    """Agent 工具：读取当前用户记忆，可按 kind 过滤。"""
     uid = get_current_user_id()
     rows = note_service.list_memories(uid, kind or None)
     if not rows:
@@ -265,6 +289,7 @@ def memory_get(kind: str = "") -> str:
 
 @tool(description="列出当前用户 workspace 沙箱内文件。relative_dir 相对路径，默认空为根。")
 def workspace_list(relative_dir: str = "") -> str:
+    """Agent 工具：列出当前用户沙箱目录下的文件名。"""
     base = _safe_workspace_path(relative_dir) if (relative_dir or "").strip() else _user_workspace_root()
     if not base.exists():
         return wrap_untrusted("tool:workspace_list", "不知道：目录不存在")
@@ -274,6 +299,7 @@ def workspace_list(relative_dir: str = "") -> str:
 
 @tool(description="读取当前用户 workspace 内文本文件。relative_path 相对路径。")
 def workspace_read(relative_path: str) -> str:
+    """Agent 工具：读取沙箱内文本文件（截断约 8000 字）。"""
     path = _safe_workspace_path(relative_path)
     if not path.is_file():
         return wrap_untrusted("tool:workspace_read", "不知道：文件不存在")
@@ -283,6 +309,7 @@ def workspace_read(relative_path: str) -> str:
 
 @tool(description="将 data/sample 或已允许目录的知识重新入库（示例库）。无入参。")
 def kb_ingest_sample() -> str:
+    """Agent 工具：触发示例知识库增量入库。"""
     from rag.vector_store import VectorStoreService
 
     VectorStoreService().load_document()
@@ -295,6 +322,7 @@ def kb_ingest_sample() -> str:
 
 @tool(description="切换技能白名单中的 skill。入参 skill_name，如 weekly_review、study_tutor。后续推理立即生效。")
 def set_skill(skill_name: str) -> str:
+    """Agent 工具：切换白名单技能，立刻影响后续系统提示。"""
     from agent.tools.middleware import SKILL_WHITELIST
 
     name = (skill_name or "").strip()

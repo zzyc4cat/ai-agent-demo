@@ -1,4 +1,4 @@
-﻿"""阶段 B：kb 元数据、增量 hash、md 加载、collection 命名。"""
+"""阶段 B：kb 元数据、增量 hash、md 加载、collection 命名。"""
 from __future__ import annotations
 
 import os
@@ -11,6 +11,7 @@ sys.path.insert(0, SRC)
 
 
 def test_collection_naming():
+    """sample/personal collection 命名规则。"""
     from rag.vector_store import collection_name_for_personal, collection_name_for_sample
 
     assert collection_name_for_sample()
@@ -18,6 +19,7 @@ def test_collection_naming():
 
 
 def test_kb_meta_bump(tmp_path, monkeypatch):
+    """kb_version 递增。"""
     import services.storage as storage
     from rag import kb_meta
 
@@ -32,6 +34,7 @@ def test_kb_meta_bump(tmp_path, monkeypatch):
 
 
 def test_md_loader(tmp_path):
+    """Markdown Loader 能读文本。"""
     from utils.file_handler import md_loader
 
     p = tmp_path / "note.md"
@@ -42,6 +45,7 @@ def test_md_loader(tmp_path):
 
 
 def test_pdf_loader_optional_password_signature():
+    """PDF Loader 支持可选密码参数。"""
     import inspect
     from utils.file_handler import pdf_loader
 
@@ -51,6 +55,7 @@ def test_pdf_loader_optional_password_signature():
 
 
 def test_ingest_cli_help():
+    """入库 CLI --help 可运行。"""
     from rag.ingest import main
     import pytest
 

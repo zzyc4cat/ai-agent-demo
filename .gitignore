@@ -38,3 +38,13 @@ workspace/**
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# node
+node_modules/
+
+# temp
+tmp_*.json
+tmp_*.md
+
+# local backups
+archive/backup/

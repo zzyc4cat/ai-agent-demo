@@ -1,4 +1,4 @@
-﻿"""阶段 A：混合检索 / RRF / 查询缓存 / 规范化。"""
+"""阶段 A：混合检索 / RRF / 查询缓存 / 规范化。"""
 from __future__ import annotations
 
 import os
@@ -11,6 +11,7 @@ sys.path.insert(0, SRC)
 
 
 def test_normalize_and_tokenize():
+    """查询规范化与分词行为。"""
     from rag.utils_rag import normalize_query, tokenize
 
     assert normalize_query("  Hello   WORLD  ") == "hello world"
@@ -21,6 +22,7 @@ def test_normalize_and_tokenize():
 
 
 def test_rrf_fuse_orders_overlap_higher():
+    """RRF 对多路重叠文档排序更高。"""
     from langchain_core.documents import Document
     from rag.retriever import rrf_fuse
 
@@ -39,6 +41,7 @@ def test_rrf_fuse_orders_overlap_higher():
 
 
 def test_query_cache_l1_l2(tmp_path, monkeypatch):
+    """L1/L2 查询缓存读写。"""
     import services.storage as storage
     from rag.query_cache import QueryCache
 
@@ -65,6 +68,7 @@ def test_query_cache_l1_l2(tmp_path, monkeypatch):
 
 
 def test_bm25_index_roundtrip(tmp_path, monkeypatch):
+    """BM25 写入后再搜索能命中。"""
     from langchain_core.documents import Document
     from rag.bm25_index import Bm25Index
     import rag.bm25_index as bi
@@ -93,6 +97,7 @@ def test_bm25_index_roundtrip(tmp_path, monkeypatch):
 
 
 def test_hybrid_retriever_gate(monkeypatch):
+    """混合检索门控行为。"""
     from langchain_core.documents import Document
     from rag.retriever import HybridRetriever
 
@@ -102,10 +107,12 @@ def test_hybrid_retriever_gate(monkeypatch):
     ]
 
     def vsearch(q, k):
+        """测试替身：返回预设向量命中。"""
         return [(docs[0], 0.9), (docs[1], 0.1)]
 
     class FakeBm25:
         def search(self, query, k=20):
+            """测试替身：返回预设 BM25 命中。"""
             return [(docs[0], 5.0)]
 
     monkeypatch.setattr("rag.retriever.dashscope_rerank", lambda *a, **k: None)
@@ -125,10 +132,12 @@ def test_hybrid_weak_vector_strong_bm25_passes(monkeypatch):
     docs = [Document(page_content="会议纪要模板", metadata={"chunk_id": "m1"})]
 
     def vsearch(q, k):
+        """测试替身：返回预设向量命中。"""
         return [(docs[0], 0.2)]  # 低于 min_similarity
 
     class FakeBm25:
         def search(self, query, k=20):
+            """测试替身：返回预设 BM25 命中。"""
             return [(docs[0], 4.0)]
 
     monkeypatch.setattr("rag.retriever.dashscope_rerank", lambda *a, **k: None)
@@ -142,16 +151,19 @@ def test_hybrid_weak_vector_strong_bm25_passes(monkeypatch):
 
 
 def test_hybrid_both_weak_gates(monkeypatch):
+    """向量与 BM25 都弱时应整路拒答。"""
     from langchain_core.documents import Document
     from rag.retriever import HybridRetriever
 
     docs = [Document(page_content="无关内容", metadata={"chunk_id": "x"})]
 
     def vsearch(q, k):
+        """测试替身：返回预设向量命中。"""
         return [(docs[0], 0.1)]
 
     class FakeBm25:
         def search(self, query, k=20):
+            """测试替身：返回预设 BM25 命中。"""
             return [(docs[0], 0.2)]
 
     monkeypatch.setattr("rag.retriever.dashscope_rerank", lambda *a, **k: None)

@@ -10,12 +10,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_start_scripts_exist():
+    """启动脚本 start.bat/ps1 存在。"""
     assert (ROOT / "start.bat").is_file()
     assert (ROOT / "start.ps1").is_file()
     assert (ROOT / "scripts" / "bootstrap.py").is_file()
 
 
 def test_bootstrap_check_only_round():
+    """bootstrap --check-only 可执行。"""
     py = ROOT / ".venv" / "Scripts" / "python.exe"
     if not py.is_file():
         py = Path(sys.executable)
@@ -41,11 +43,13 @@ def test_bootstrap_idempotent_three_rounds():
 
 
 def test_api_server_importable():
+    """api_server 模块可导入。"""
     import api_server
 
     assert api_server.app.title
 
 
 def test_dockerfile_exists():
+    """部署用 Dockerfile 存在。"""
     assert (ROOT / "deploy" / "Dockerfile").is_file()
     assert (ROOT / "deploy" / "docker-compose.yml").is_file()

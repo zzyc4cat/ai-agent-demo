@@ -1,4 +1,4 @@
-﻿"""会话置顶 / 重命名 / 删除。"""
+"""会话置顶 / 重命名 / 删除。"""
 from __future__ import annotations
 
 import os
@@ -11,6 +11,7 @@ sys.path.insert(0, SRC)
 
 
 def test_pin_rename_delete_no_overlap(tmp_path, monkeypatch):
+    """验证置顶/重命名/删除不会把会话列重复。"""
     import services.storage as storage
     from services import user_service, chat_service
 
@@ -47,6 +48,7 @@ def test_pin_rename_delete_no_overlap(tmp_path, monkeypatch):
 
 
 def test_list_conversations_accepts_pinned_kwarg(tmp_path, monkeypatch):
+    """list_conversations 必须接受 pinned 参数。"""
     import services.storage as storage
     from services import user_service, chat_service
 
@@ -60,6 +62,7 @@ def test_list_conversations_accepts_pinned_kwarg(tmp_path, monkeypatch):
 
 
 def test_ui_menu_closes_after_action_pattern():
+    """检查 app.py 在菜单操作后关闭 popover。"""
     text = open(os.path.join(ROOT, "app.py"), encoding="utf-8").read()
     assert "_close_conv_menu" in text
     assert "open_conv_menu" in text

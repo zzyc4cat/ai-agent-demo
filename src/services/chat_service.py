@@ -1,4 +1,7 @@
-"""会话与聊天消息持久化（按用户隔离）。"""
+"""
+会话列表与消息落库（Streamlit 历史）。与 LangGraph Checkpointer 互补：
+这里给人看的对话菜单；Checkpointer 存 Agent 图状态。
+"""
 from __future__ import annotations
 
 import uuid
@@ -7,6 +10,7 @@ from services.storage import ensure_db, get_conn
 
 
 def _ensure_chat_tables() -> None:
+    """确保会话与消息表存在，并补 pinned/updated_at 列。"""
     ensure_db()
     with get_conn() as conn:
         conn.execute(
@@ -44,10 +48,12 @@ def _ensure_chat_tables() -> None:
 
 
 def new_conversation_id() -> str:
+    """生成短会话 id。"""
     return uuid.uuid4().hex[:12]
 
 
 def ensure_conversation(user_id: int, conversation_id: str, title: str | None = None) -> None:
+    """没有则插入会话行，有则刷新 updated_at。"""
     _ensure_chat_tables()
     with get_conn() as conn:
         row = conn.execute(
@@ -97,6 +103,7 @@ def list_conversations(
 
 
 def rename_conversation(user_id: int, conversation_id: str, title: str) -> bool:
+    """重命名属于该用户的会话。"""
     title = (title or "").strip()
     if not title:
         raise ValueError("标题不能为空")
@@ -112,6 +119,7 @@ def rename_conversation(user_id: int, conversation_id: str, title: str) -> bool:
 
 
 def set_pinned(user_id: int, conversation_id: str, pinned: bool) -> bool:
+    """设置会话置顶标志。"""
     _ensure_chat_tables()
     with get_conn() as conn:
         cur = conn.execute(
@@ -122,6 +130,7 @@ def set_pinned(user_id: int, conversation_id: str, pinned: bool) -> bool:
 
 
 def delete_conversation(user_id: int, conversation_id: str) -> bool:
+    """删除会话及其消息。"""
     _ensure_chat_tables()
     with get_conn() as conn:
         conn.execute(
@@ -136,6 +145,7 @@ def delete_conversation(user_id: int, conversation_id: str) -> bool:
 
 
 def load_messages(user_id: int, conversation_id: str) -> list[dict]:
+    """按时间顺序加载某会话消息。"""
     _ensure_chat_tables()
     with get_conn() as conn:
         rows = conn.execute(
@@ -147,6 +157,7 @@ def load_messages(user_id: int, conversation_id: str) -> list[dict]:
 
 
 def append_message(user_id: int, conversation_id: str, role: str, content: str) -> None:
+    """追加一条消息；首条用户消息可自动当标题。"""
     _ensure_chat_tables()
     ensure_conversation(user_id, conversation_id)
     with get_conn() as conn:
@@ -179,5 +190,6 @@ def append_message(user_id: int, conversation_id: str, role: str, content: str) 
 
 def get_latest_conversation_id(user_id: int) -> str | None:
     # 优先最近更新的会话（含置顶与非置顶）
+    """返回该用户最近更新的会话 id。"""
     rows = list_conversations(user_id, pinned=None, limit=1)
     return rows[0]["id"] if rows else None

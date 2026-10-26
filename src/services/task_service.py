@@ -1,10 +1,11 @@
-"""待办服务（按 user_id 隔离）。"""
+"""待办 CRUD。所有 SQL 带 user_id，complete_task 防止改他人任务。"""
 from __future__ import annotations
 
 from services.storage import get_conn, ensure_db
 
 
 def add_task(user_id: int, title: str, due_at: str | None = None, priority: str | None = None) -> dict:
+    """新增待办。"""
     title = (title or "").strip()
     if not title:
         raise ValueError("待办标题不能为空")
@@ -25,6 +26,7 @@ def add_task(user_id: int, title: str, due_at: str | None = None, priority: str 
 
 
 def list_tasks(user_id: int, status: str = "open") -> list[dict]:
+    """按状态列出当前用户待办。"""
     ensure_db()
     with get_conn() as conn:
         if status == "all":
@@ -41,6 +43,7 @@ def list_tasks(user_id: int, status: str = "open") -> list[dict]:
 
 
 def complete_task(user_id: int, task_id: int) -> bool:
+    """仅当任务属于该用户时标为完成。"""
     with get_conn() as conn:
         cur = conn.execute(
             "UPDATE tasks SET status = 'done' WHERE id = ? AND user_id = ?",

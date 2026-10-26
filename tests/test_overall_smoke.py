@@ -1,4 +1,4 @@
-﻿"""整体功能多轮冒烟：工具 / 缓存 / 天气 / 计算 / 用户数据。"""
+"""整体功能多轮冒烟：工具 / 缓存 / 天气 / 计算 / 用户数据。"""
 from __future__ import annotations
 
 import os
@@ -14,6 +14,7 @@ sys.path.insert(0, SRC)
 
 @pytest.fixture()
 def user_tools(tmp_path, monkeypatch):
+    """fixture：准备测试用户并绑定工具上下文。"""
     import services.storage as storage
     from services import user_service
     from agent.tools import agent_tools
@@ -26,6 +27,7 @@ def user_tools(tmp_path, monkeypatch):
 
 
 def test_overall_round_1_core_tools(user_tools):
+    """冒烟：待办、笔记、计算器等核心工具。"""
     from agent.tools.agent_tools import datetime_now, task_add, task_list, note_write, get_weather
     from agent.tools.tools_b import calculator
 
@@ -41,6 +43,7 @@ def test_overall_round_1_core_tools(user_tools):
 
 
 def test_overall_round_2_search_and_memory(user_tools):
+    """冒烟：搜索类工具与记忆读写。"""
     from agent.tools.agent_tools import web_search, memory_set, memory_get
 
     s = web_search.invoke({"query": "LangChain"})
@@ -51,6 +54,7 @@ def test_overall_round_2_search_and_memory(user_tools):
 
 
 def test_overall_round_3_rag_cache_and_guard():
+    """冒烟：RAG 缓存键与 Prompt 护栏。"""
     from rag.query_cache import QueryCache
     from agent.tools.prompt_guard import get_prompt_guard
 

@@ -1,4 +1,4 @@
-﻿"""阶段 C：embedding 缓存、评测夹具、配置完备性。"""
+"""阶段 C：embedding 缓存、评测夹具、配置完备性。"""
 from __future__ import annotations
 
 import json
@@ -13,18 +13,22 @@ sys.path.insert(0, SRC)
 
 class _FakeEmb:
     def __init__(self):
+        """测试用假 Embedding。"""
         self.calls = 0
 
     def embed_documents(self, texts):
+        """返回固定维度假向量列表。"""
         self.calls += len(texts)
         return [[float(len(t)), 0.1] for t in texts]
 
     def embed_query(self, text):
+        """返回固定维度假查询向量。"""
         self.calls += 1
         return [float(len(text)), 0.2]
 
 
 def test_embedding_cache_hits(tmp_path, monkeypatch):
+    """Embedding 磁盘缓存二次命中。"""
     from rag.embedding_cache import CachedEmbeddings
     import rag.embedding_cache as ec
 
@@ -54,6 +58,7 @@ def test_embedding_cache_hits(tmp_path, monkeypatch):
 
 
 def test_rag_eval_fixture_exists():
+    """评测黄金集文件存在。"""
     path = os.path.join(ROOT, "tests", "fixtures", "rag_eval.jsonl")
     assert os.path.isfile(path)
     lines = open(path, encoding="utf-8").readlines()
@@ -63,6 +68,7 @@ def test_rag_eval_fixture_exists():
 
 
 def test_rag_runtime_config_loaded():
+    """能加载 rag_runtime.yml。"""
     from utils.config_handler import load_rag_runtime_config
 
     cfg = load_rag_runtime_config()

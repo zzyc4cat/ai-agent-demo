@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>设备知识库问答</title>
+<style>
+  :root{
+    --bg:#F7F8FA; --surface:#fff; --border:#E5E7EB;
+    --text:#111827; --muted:#6B7280; --primary:#2563EB; --primary-h:#1D4ED8;
+    --danger:#DC2626; --warn:#D97706;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       font-size:14px;line-height:1.7}
+  header{height:56px;display:flex;align-items:center;justify-content:space-between;
+         padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border)}
+  header h1{font-size:16px;margin:0;font-weight:600}
+  header .status{color:var(--muted);font-size:12px}
+  main{max-width:760px;margin:0 auto;padding:24px 16px 120px}
+  .row{display:flex;gap:8px}
+  input,button{font:inherit}
+  input[type=password],input[type=text]{flex:1;padding:10px 12px;border:1px solid var(--border);
+        border-radius:6px;background:#fff;outline:none}
+  input:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(37,99,235,.15)}
+  button{padding:10px 16px;border:0;border-radius:6px;background:var(--primary);color:#fff;cursor:pointer}
+  button:hover{background:var(--primary-h)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  #keybar{margin-bottom:16px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+  #keybar p{margin:0 0 8px;color:var(--muted);font-size:12px}
+  #chat{display:flex;flex-direction:column;gap:16px}
+  .msg{max-width:100%}
+  .msg.user{align-self:flex-end;background:var(--primary);color:#fff;padding:10px 14px;
+            border-radius:12px;max-width:85%;white-space:pre-wrap}
+  .msg.bot{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
+  .msg.bot .head{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-bottom:6px}
+  .cites{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .cite{border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--muted)}
+  .cite b{color:var(--text);font-weight:600}
+  .cite .snip{margin-top:4px;color:var(--muted);white-space:pre-wrap}
+  .empty{color:var(--muted);text-align:center;padding:40px 0}
+  .err{color:var(--danger)}
+  footer{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);
+         padding:12px 16px}
+  footer .inner{max-width:760px;margin:0 auto;display:flex;gap:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>设备知识库问答</h1>
+  <span class="status" id="status">未连接</span>
+</header>
+
+<main>
+  <div id="keybar">
+    <p>输入访问密钥（只在本地浏览器保存，刷新需重填）</p>
+    <div class="row">
+      <input id="key" type="password" placeholder="AGENT_API_KEY" autocomplete="off" />
+      <button id="save">保存</button>
+    </div>
+  </div>
+
+  <div id="chat">
+    <div class="empty" id="empty">问一个设备问题，例如：X1 系列热床最高允许温度是多少？</div>
+  </div>
+</main>
+
+<footer>
+  <div class="inner">
+    <input id="q" type="text" placeholder="输入问题，回车发送" />
+    <button id="send">发送</button>
+  </div>
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const chat = $("chat"), empty = $("empty"), statusEl = $("status");
+let apiKey = sessionStorage.getItem("kb_key") || "";
+
+function setStatus(text, ok) {
+  statusEl.textContent = text;
+  statusEl.style.color = ok ? "var(--muted)" : "var(--danger)";
+}
+if (apiKey) { $("key").value = apiKey; setStatus("已就绪", true); }
+
+$("save").onclick = () => {
+  apiKey = $("key").value.trim();
+  sessionStorage.setItem("kb_key", apiKey);
+  setStatus(apiKey ? "已就绪" : "未连接", !!apiKey);
+};
+
+function addUser(text) {
+  empty.style.display = "none";
+  const d = document.createElement("div");
+  d.className = "msg user";
+  d.textContent = text;
+  chat.appendChild(d);
+  d.scrollIntoView({behavior: "smooth", block: "end"});
+}
+
+function addBot(payload) {
+  const d = document.createElement("div");
+  d.className = "msg bot";
+  const head = document.createElement("div");
+  head.className = "head";
+  head.innerHTML = `<span>${payload.refused ? "未找到依据" : "回答"}</span><span>${payload.latency_ms} ms · ${payload.request_id}</span>`;
+  const body = document.createElement("div");
+  body.textContent = payload.answer;
+  d.appendChild(head); d.appendChild(body);
+
+  if (payload.citations && payload.citations.length) {
+    const list = document.createElement("div");
+    list.className = "cites";
+    payload.citations.forEach((c, i) => {
+      const item = document.createElement("div");
+      item.className = "cite";
+      const name = (c.source || "").split("/").pop();
+      item.innerHTML = `<b>${i + 1}. ${name}</b><div class="snip">${(c.snippet || "").slice(0, 120)}…</div>`;
+      list.appendChild(item);
+    });
+    d.appendChild(list);
+  }
+  chat.appendChild(d);
+  d.scrollIntoView({behavior: "smooth", block: "end"});
+}
+
+function addError(text) {
+  const d = document.createElement("div");
+  d.className = "msg bot err";
+  d.textContent = text;
+  chat.appendChild(d);
+}
+
+async function send() {
+  const q = $("q").value.trim();
+  if (!q) return;
+  if (!apiKey) { setStatus("请先填写密钥", false); return; }
+  $("q").value = "";
+  addUser(q);
+  $("send").disabled = true;
+  try {
+    const res = await fetch("/kb/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+      body: JSON.stringify({ question: q }),
+    });
+    if (res.status === 401) { addError("密钥无效（401）"); setStatus("密钥无效", false); return; }
+    if (res.status === 429) { addError("请求太频繁（429），稍后再试"); return; }
+    if (!res.ok) { addError("服务异常：" + res.status); return; }
+    addBot(await res.json());
+  } catch (e) {
+    addError("请求失败：" + e.message);
+  } finally {
+    $("send").disabled = false;
+  }
+}
+
+$("send").onclick = send;
+$("q").addEventListener("keydown", (e) => { if (e.key === "Enter") send(); });
+</script>
+</body>
+</html>

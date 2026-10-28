@@ -13,10 +13,12 @@ import time
 import uuid
 from collections import deque
 from contextlib import asynccontextmanager
+from pathlib import Path
 from threading import Lock
 from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from agent.react_agent import ReactAgent
@@ -33,6 +35,7 @@ _kb: RagSummarizeService | None = None
 RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "10"))
 _rate_buckets: dict[str, deque[float]] = {}
 _rate_lock = Lock()
+INDEX_HTML = Path(__file__).resolve().parents[1] / "web" / "static" / "index.html"
 
 
 @asynccontextmanager
@@ -163,6 +166,14 @@ def _validate_skill(skill: str) -> str:
             detail=f"skill 不在白名单：{sorted(SKILL_WHITELIST)}",
         )
     return name
+
+
+@app.get("/", include_in_schema=False)
+def index():
+    """浏览器入口：返回内置问答页；文件缺失时给出接口提示。"""
+    if INDEX_HTML.is_file():
+        return FileResponse(INDEX_HTML)
+    return {"status": "ok", "docs": "/docs", "kb": "/kb/ask"}
 
 
 @app.get("/health")

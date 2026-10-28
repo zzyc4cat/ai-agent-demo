@@ -25,12 +25,13 @@ from agent.react_agent import ReactAgent
 from agent.tools.agent_tools import set_current_user_id
 from agent.tools.middleware import SKILL_WHITELIST
 from rag.rag_service import RagSummarizeService
+from rag.tenant import load_tenant, list_tenants
 from services import user_service
 from services.storage import ensure_db
 from utils.logger_handler import log_event
 
 _agent: ReactAgent | None = None
-_kb: RagSummarizeService | None = None
+_kb_cache: dict[str, RagSummarizeService] = {}
 
 RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "10"))
 _rate_buckets: dict[str, deque[float]] = {}
@@ -126,12 +127,13 @@ def _get_agent() -> ReactAgent:
     return _agent
 
 
-def _get_kb() -> RagSummarizeService:
-    """懒创建并缓存知识库问答服务。"""
-    global _kb
-    if _kb is None:
-        _kb = RagSummarizeService()
-    return _kb
+def _get_kb(tenant_id: str) -> RagSummarizeService:
+    """按租户懒创建并缓存知识库问答服务。"""
+    svc = _kb_cache.get(tenant_id)
+    if svc is None:
+        svc = RagSummarizeService(tenant_id=tenant_id)
+        _kb_cache[tenant_id] = svc
+    return svc
 
 
 def _client_key(authorization: str | None, x_api_key: str | None, request: Request) -> str:
@@ -178,9 +180,13 @@ def index():
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    """健康检查，并告知是否已配置 API Key。"""
+    """健康检查，并告知是否已配置 API Key 与可用租户。"""
     keyed = bool(_expected_api_key())
-    return {"status": "ok", "api_key_configured": keyed}
+    return {
+        "status": "ok",
+        "api_key_configured": keyed,
+        "tenants": [t["id"] for t in list_tenants()],
+    }
 
 
 @app.post("/chat", response_model=ChatResponse)
@@ -258,6 +264,7 @@ class Citation(BaseModel):
 
 class AskResponse(BaseModel):
     request_id: str
+    tenant: str
     answer: str
     citations: list[Citation]
     latency_ms: int
@@ -270,14 +277,20 @@ def kb_ask(
     request: Request,
     authorization: str | None = Header(default=None),
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    x_tenant: str | None = Header(default="demo", alias="X-Tenant"),
 ) -> AskResponse:
-    """知识库问答：返回答案与引用；按 API Key / IP 限流。"""
+    """知识库问答：按 X-Tenant 选择租户，返回答案与引用。"""
     require_api_key(authorization, x_api_key)
     check_rate_limit(_client_key(authorization, x_api_key, request))
+    tenant_id = (x_tenant or "demo").strip() or "demo"
+    try:
+        load_tenant(tenant_id)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant_id}") from e
     question = body.question.strip()
     rid = uuid.uuid4().hex[:12]
     started = time.perf_counter()
-    svc = _get_kb()
+    svc = _get_kb(tenant_id)
     docs = svc.retrieve_docs(question)
     if docs:
         parts = [
@@ -297,9 +310,10 @@ def kb_ask(
         for d in docs[:5]
     ]
     refused = str(answer).strip().startswith("不知道")
-    log_event("api.kb", request_id=rid, ms=latency, docs=len(docs), refused=refused)
+    log_event("api.kb", request_id=rid, tenant=tenant_id, ms=latency, docs=len(docs), refused=refused)
     return AskResponse(
         request_id=rid,
+        tenant=tenant_id,
         answer=str(answer),
         citations=citations,
         latency_ms=latency,

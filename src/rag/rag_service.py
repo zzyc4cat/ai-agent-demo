@@ -20,6 +20,7 @@ from rag.bm25_index import Bm25Index
 from rag.kb_meta import get_kb_version
 from rag.query_cache import QueryCache, get_query_cache
 from rag.retriever import HybridRetriever
+from rag.tenant import load_tenant
 from rag.utils_rag import get_runtime
 from rag.vector_store import (
     VectorStoreService,
@@ -54,14 +55,20 @@ _CODE_RE = re.compile(r"\b\d{4}-\d{4}-\d{4}-\d{4}\b")
 
 class RagSummarizeService:
     """对外 rag_summarize / retrieve_docs；工具 rag_summarize 与 API /rag/summarize 共用。"""
-    def __init__(self) -> None:
-        """加载 Prompt 并打开 sample 向量库。"""
+    def __init__(self, tenant_id: str | None = None) -> None:
+        """加载 Prompt 并打开对应租户的向量库（缺省为 sample）。"""
+        self.tenant_id = tenant_id
+        self._tenant_cfg = load_tenant(tenant_id) if tenant_id else {}
         self.prompt_text = load_rag_prompts()
         self.prompt_template = PromptTemplate.from_template(self.prompt_text)
         self.prompt_ver = _prompt_version(self.prompt_text)
-        # 兼容：优先新 sample collection，若空可回退 legacy（检索时合并）
-        self.sample_store = VectorStoreService(collection_name_for_sample())
-        self._legacy_name = legacy_sample_collection()
+        collection = (
+            str(self._tenant_cfg.get("collection"))
+            if tenant_id
+            else collection_name_for_sample()
+        )
+        self.sample_store = VectorStoreService(collection)
+        self._legacy_name = None if tenant_id else legacy_sample_collection()
         self.cache = get_query_cache()
 
     def _chain(self):
@@ -77,20 +84,21 @@ class RagSummarizeService:
         return self.prompt_template | maybe_log_prompt | model | StrOutputParser()
 
     def _stores_for_user(self, user_id: int | None) -> list[VectorStoreService]:
-        """返回 sample、遗留 collection 与个人库列表。"""
+        """返回当前租户的 collection；非租户模式兼容 sample/legacy/个人库。"""
         stores = [self.sample_store]
-        # legacy 并行检索（迁移前数据）
-        if self._legacy_name != self.sample_store.collection_name:
+        if self._legacy_name and self._legacy_name != self.sample_store.collection_name:
             try:
                 stores.append(VectorStoreService(self._legacy_name))
             except Exception:
                 pass
-        if user_id is not None:
+        if user_id is not None and not self.tenant_id:
             stores.append(VectorStoreService(collection_name_for_personal(int(user_id))))
         return stores
 
     def _kb_version_token(self, user_id: int | None) -> str:
-        """拼接当前用户相关知识库版本，作缓存失效依据。"""
+        """拼接当前租户/用户相关知识库版本，作缓存失效依据。"""
+        if self.tenant_id:
+            return get_kb_version(f"tenant:{self.tenant_id}")
         parts = [get_kb_version("sample")]
         if user_id is not None:
             parts.append(get_kb_version(f"personal:{user_id}"))
@@ -136,9 +144,17 @@ class RagSummarizeService:
 
     def rag_summarize(self, query: str, user_id: int | None = None) -> str:
         """走 L2/L1 缓存或检索后生成总结；无命中返回不知道。"""
-        scope = f"u:{user_id}" if user_id is not None else "u:anon"
+        scope = (
+            f"t:{self.tenant_id}:u:{user_id}"
+            if self.tenant_id
+            else (f"u:{user_id}" if user_id is not None else "u:anon")
+        )
         kb_ver = self._kb_version_token(user_id)
-        corpus_scope = "sample+personal" if user_id is not None else "sample"
+        corpus_scope = (
+            f"tenant:{self.tenant_id}"
+            if self.tenant_id
+            else ("sample+personal" if user_id is not None else "sample")
+        )
         cache = self.cache
 
         try:

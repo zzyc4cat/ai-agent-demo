@@ -2452,3 +2452,36 @@
 
 ### [2026-10-28 15:11:50] stage=model.select req=- user=- model=qwen3_8_flash
 - mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:16:26] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1系列热床最高允许温度是多少？
+
+### [2026-10-28 15:16:26] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:18:03] stage=rag.cache req=- user=- model=-
+- action=invalidate user_scope=u:anon
+
+### [2026-10-28 15:18:20] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 15:18:21] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:18:23] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 15:18:23] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:18:26] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 系列热床最高允许温度是多少？
+
+### [2026-10-28 15:18:26] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:18:41] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 15:18:42] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 机型使用什么冷却液？

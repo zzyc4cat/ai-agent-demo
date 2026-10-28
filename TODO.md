@@ -50,8 +50,11 @@
 - [x] 一键启动脚本 `start-api.ps1` / `start-tunnel.ps1`
 
 ### M3 交付（W4–W5）
-- [ ] `tenant_id` 全链路 + 3 条隔离测试
-- [ ] `tenants/*.yaml` 配置化 + `init_tenant` 脚本
+- [x] 租户配置化：`tenants/<id>.yaml` + `scripts/init_tenant.py`
+- [x] 检索隔离：每租户独立 collection（demo 复用 agent_sample，demo2 独立）
+- [x] API 按 `X-Tenant` 路由，未知租户返回 404
+- [x] 隔离测试 `tests/test_isolation.py`（4 条，全部通过）
+- [ ] 会话 / 反馈 / badcase 按租户落库
 - [ ] 对外 React 对话页（SSE + 引用 + 反馈）
 - [ ] 后台：文档管理、badcase、租户配置
 

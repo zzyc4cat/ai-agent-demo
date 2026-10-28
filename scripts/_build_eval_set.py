@@ -1,0 +1,158 @@
+# -*- coding: utf-8 -*-
+"""生成评测集 v1（候选）：40 可答 + 10 库外。"""
+import csv
+import sys
+from pathlib import Path
+
+sys.stdout.reconfigure(encoding="utf-8")
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "eval" / "eval_set_v1.csv"
+
+F = "fault_codes/"
+ROWS = [
+    # ---------- 单文档事实/步骤（20） ----------
+    ("s01", "单文档", "X1 报 HMS 0300-0100-0001-0003，说明文档列出的常见原因有哪些？",
+     F + "X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md",
+     "热床加热供电链路异常（AC板/主板）、热床温度传感器故障"),
+    ("s02", "单文档", "X1 系列热床最高允许温度是多少？",
+     F + "X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md", "110℃"),
+    ("s03", "单文档", "P1 系列热床最高许用温度是多少？",
+     F + "X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md", "100℃"),
+    ("s04", "单文档", "A1 mini 的热床最高许用温度是多少？",
+     F + "X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md", "80℃"),
+    ("s05", "单文档", "热床设置温度超过上限时，打印机会做什么处理？",
+     F + "X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md",
+     "自动调整到最高允许温度并发出 HMS 提示"),
+    ("s06", "单文档", "“喷嘴温度异常，加热器可能短路”对应的 HMS 代码是什么？",
+     F + "X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md",
+     "0300-0200-0001-0001"),
+    ("s07", "单文档", "喷嘴温度传感器可能开路时，文档建议先检查什么？",
+     F + "X1_fault_code_v1.0_HMS-0300-0200-0001-0007_喷嘴传感器开路.md", "热端硅胶套"),
+    ("s08", "单文档", "热床不升温且温度显示为 0 时，属于文档里的哪种情形？",
+     F + "X1_fault_code_v1.0_热床不升温排查.md", "情形一：热床温度显示为 0"),
+    ("s09", "单文档", "打印机检测不到 AMS 时，操作指导分哪几步？",
+     F + "X1_fault_code_v1.0_AMS_is_not_detected_by_the_printer.md",
+     "Pin 脚检查、线缆连接检查、电阻测量"),
+    ("s10", "单文档", "AMS 无法上电时，怎么确认是不是供电问题？",
+     F + "X1_fault_code_v1.0_ams-power-failure.md", "查 Pin 脚、线缆连接，再测量电压"),
+    ("s11", "单文档", "AMS 一直进料退料循环，常见原因有哪些？",
+     F + "X1_fault_code_v1.0_ams_buffer_signal_lost.md",
+     "6Pin 线接触不良、缓冲器弹簧/滑块异常、AMS 内部连接问题"),
+    ("s12", "单文档", "AMS 指示灯的不同状态分别代表什么？",
+     F + "X1_fault_code_v1.0_ams-led-status.md", "见文档指示灯状态表"),
+    ("s13", "单文档", "打印机提示切刀卡住，为什么会这样、怎么处理？",
+     F + "X1_fault_code_v1.0_cutter-stuck.md", "切刀被耗材或异物卡住，按解决办法清理"),
+    ("s14", "单文档", "显示屏完全黑屏和“黑屏但背光闪烁”，处理方式一样吗？",
+     F + "X1_fault_code_v1.0_black-flicker-screen.md", "不一样，文档分两种情形给方案"),
+    ("s15", "单文档", "触摸屏功能失效，第一步检查什么？",
+     F + "X1_fault_code_v1.0_touch-screen-failed.md", "检查显示屏端连接，重装 LCD 显示屏"),
+    ("s16", "单文档", "开机后屏幕无法正常启动，第一步做什么？",
+     F + "X1_fault_code_v1.0_SD卡损坏.md", "关闭打印机，拔出 SD 卡"),
+    ("s17", "单文档", "X1 固件升级失败，文档列出的故障原因有哪些？",
+     F + "X1_fault_code_v1.0_固件升级失败.md", "见文档「故障原因」章节"),
+    ("s18", "单文档", "挤出机堵塞后，维护指南的核心步骤是什么？",
+     F + "X1_fault_code_v1.0_extruder-clog.md", "拆卸挤出机并清理内部"),
+    ("s19", "单文档", "喷嘴/热端堵塞有哪三种处理方法？",
+     F + "X1_fault_code_v1.0_nozzle-clog.md", "手动挤出、工具疏通、冷拔"),
+    ("s20", "单文档", "清理热端裹头需要哪些工具，大概要多久？",
+     F + "X1_fault_code_v1.0_热端裹头处理.md", "吹风机、平头镊子、纸巾、隔热手套，约 25 分钟"),
+
+    # ---------- 短文档/概念（6） ----------
+    ("c01", "概念", "HMS 是什么的缩写，它负责什么？",
+     "manuals/X1_manual_v1.0_HMS介绍.md", "Health Management System，监控整机状态并报警"),
+    ("c02", "概念", "HMS 代码里 0300 这一段代表哪个部件？",
+     "manuals/X1_manual_v1.0_HMS介绍.md", "03 = MC 运动控制，00 为部件序号"),
+    ("c03", "概念", "HMS 告警等级 0001、0002、0003 分别是什么？",
+     "manuals/X1_manual_v1.0_HMS介绍.md", "0001 错误、0002 警告、0003 提醒"),
+    ("c04", "概念", "HMS 有哪些局限性？",
+     "manuals/X1_manual_v1.0_HMS介绍.md", "覆盖不全、识别不了丢步、根因复杂"),
+    ("c05", "概念", "“无法拉回料线”文档列出的原因有哪几个？",
+     F + "X1_fault_code_v1.0_cannot-pull-back-filament.md",
+     "料线末端膨胀、料盘卡住、AMS 料线进出口问题"),
+    ("c06", "概念", "打印 PLA 翘边，除了涂胶还要调哪个参数？",
+     F + "X1_fault_code_v1.0_possible-problems-in-printing.md", "“关闭冷却对前”从 1 改为 3"),
+
+    # ---------- 跨文档（8） ----------
+    ("x01", "跨文档", "热床过温（0001-0003）和 AC 板故障（0001-000A）都指向热床温控，处理上怎么区分？",
+     F + "X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md|" + F + "X1_fault_code_v1.0_HMS-0300-0100-0001-000A_AC板故障.md",
+     "前者查测温/供电链路，后者按 AC 板故障处理"),
+    ("x02", "跨文档", "喷嘴加热短路和喷嘴传感器开路，排查重点有什么不同？",
+     F + "X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md|" + F + "X1_fault_code_v1.0_HMS-0300-0200-0001-0007_喷嘴传感器开路.md",
+     "短路查加热器与线路，开路先查硅胶套与传感器连接"),
+    ("x03", "跨文档", "“打印机堵塞排查”和“喷嘴/热端堵塞”两篇分别解决什么问题？",
+     F + "X1_fault_code_v1.0_打印头堵塞排查.md|" + F + "X1_fault_code_v1.0_nozzle-clog.md",
+     "前者定位堵在哪一段，后者给喷嘴清理方法"),
+    ("x04", "跨文档", "AMS 无法上电和检测不到 AMS，排查重点有何不同？",
+     F + "X1_fault_code_v1.0_ams-power-failure.md|" + F + "X1_fault_code_v1.0_AMS_is_not_detected_by_the_printer.md",
+     "上电查供电电压；未检测查通信/电阻"),
+    ("x05", "跨文档", "屏幕黑屏时，怎么判断是屏幕问题还是电路板问题？",
+     F + "X1_fault_code_v1.0_black-flicker-screen.md|" + F + "X1_fault_code_v1.0_电路板供电故障.md",
+     "电路板文档有「电路故障与黑屏的区别」章节"),
+    ("x06", "跨文档", "Z 轴回中失败有哪两种原因，分别看哪篇？",
+     F + "X1_fault_code_v1.0_homing-Z-axis-failed_cable-tensioned.md|" + F + "X1_fault_code_v1.0_homing-z-axis-failed_part-unit-interference.md",
+     "热床线缆被拉紧 / 组件干涉"),
+    ("x07", "跨文档", "耗材断裂在料管里和在 AMS 内部，处理方式一样吗？",
+     F + "X1_fault_code_v1.0_耗材断裂.md|" + F + "X1_fault_code_v1.0_filament-breaks-in-path.md",
+     "不一样，文档按断裂位置分情形处理"),
+    ("x08", "跨文档", "热床不升温和热床过温，排查思路有什么不同？",
+     F + "X1_fault_code_v1.0_热床不升温排查.md|" + F + "X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md",
+     "不升温查供电/加热；过温查传感器与持续加热"),
+
+    # ---------- 多跳（6） ----------
+    ("m01", "多跳", "用户报 0300-0200-0001-0001，这个码属于哪个部件、该按什么顺序排查？",
+     "manuals/X1_manual_v1.0_HMS介绍.md|" + F + "X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md",
+     "先按编码定位到喷嘴加热器，再按机型做测量"),
+    ("m02", "多跳", "A1 报 0300-0100-0001-0008，处理方式和 X1 有什么不同？",
+     F + "A1_fault_code_v1.0_HMS-0300-0100-0001-0008_热床加热异常.md",
+     "文档按 A1/A1 mini 与 X1/P1 分别给出步骤"),
+    ("m03", "多跳", "打印 PETG 时冷却风扇有什么限制？",
+     F + "X1_fault_code_v1.0_possible-problems-in-printing.md",
+     "不超过 70%，且不要用辅助冷却风扇"),
+    ("m04", "多跳", "为什么要确认 AMS 主板版本，怎么确认？",
+     F + "X1_fault_code_v1.0_version-ams-main-board.md", "不同版本对应不同升级件，按文档指引确认"),
+    ("m05", "多跳", "升级失败后，怎么把日志交给客服？",
+     F + "X1_fault_code_v1.0_固件升级失败.md|" + F + "X1_fault_code_v1.0_update-log-to-a-ticket.md",
+     "Bambu Handy 或官网，把日志上传到现有工单"),
+    ("m06", "多跳", "热床不升温时，怎么判断是热床本身还是 AC 板的问题？",
+     F + "X1_fault_code_v1.0_热床不升温排查.md|" + F + "X1_fault_code_v1.0_HMS-0300-0100-0001-000A_AC板故障.md",
+     "按供电链路分段测量，结合 AC 板排查步骤"),
+
+    # ---------- 库外（10） ----------
+    ("n01", "库外", "如何更换汽车轮胎？", "", "应回答不知道，语料无关"),
+    ("n02", "库外", "这台打印机的保修期是几年？", "", "语料未收录保修政策"),
+    ("n03", "库外", "Bambu Lab 公司是哪一年成立的？", "", "语料未收录公司信息"),
+    ("n04", "库外", "X1 的最大打印尺寸是多少？", "", "语料未收录规格参数"),
+    ("n05", "库外", "可以用洗衣机清洗打印件吗？", "", "语料未涉及"),
+    ("n06", "库外", "3D 打印机喷嘴直径有几种规格？", "", "语料未收录"),
+    ("n07", "库外", "如何申请退款？", "", "语料只有工单入口，无退款政策"),
+    ("n08", "库外", "Prusa 打印机的校准步骤是什么？", "", "语料只有 Bambu 设备"),
+    ("n09", "库外", "A1 mini 的屏幕怎么更换？", "", "语料只有 X1 触屏相关，无 A1 mini 换屏"),
+    ("n10", "库外", "2024 年的固件版本号是多少？", "", "语料无版本号清单"),
+]
+
+
+def main() -> None:
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    missing = []
+    base = ROOT / "data" / "tenants" / "demo"
+    for r in ROWS:
+        for doc in filter(None, r[3].split("|")):
+            if not (base / doc).is_file():
+                missing.append((r[0], doc))
+    with OUT.open("w", encoding="utf-8-sig", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["id", "type", "question", "expected_doc", "answer_key", "verified"])
+        for r in ROWS:
+            w.writerow([*r, ""])
+    print(f"written: {OUT}  rows={len(ROWS)}")
+    if missing:
+        print("MISSING DOCS:")
+        for mid, doc in missing:
+            print(f"  {mid}: {doc}")
+    else:
+        print("all expected docs exist")
+
+
+if __name__ == "__main__":
+    main()

@@ -5,13 +5,14 @@ defaults:
   mode: auto
 
 chat_models:
-  - id: qwen_turbo
-    provider: dashscope
-    model_name: qwen-turbo
+  - id: qwen3_8_flash
+    provider: dashscope_compat
+    model_name: qwen3.8-flash
     priority: 10
     enabled: true
     api_key_env: DASHSCOPE_API_KEY
-    note: "低成本/常有免费额度，Auto 优先"
+    base_url_env: DASHSCOPE_BASE_URL
+    note: "输入 0.8 / 输出 2.7 元每百万 tokens，Auto 首选"
 
   - id: qwen_plus
     provider: dashscope

@@ -32,6 +32,7 @@ class ModelSpec:
     priority: int = 100
     enabled: bool = True
     api_key_env: str = "DASHSCOPE_API_KEY"
+    base_url_env: str = ""
     note: str = ""
 
 
@@ -68,6 +69,7 @@ class ModelRouter:
                     priority=int(item.get("priority", 100)),
                     enabled=bool(item.get("enabled", True)),
                     api_key_env=item.get("api_key_env", "DASHSCOPE_API_KEY"),
+                    base_url_env=item.get("base_url_env", ""),
                     note=item.get("note", ""),
                 )
             )
@@ -137,7 +139,28 @@ class ModelRouter:
         return False
 
     def _create_chat(self, spec: ModelSpec) -> BaseChatModel:
-        """实例化通义 ChatTongyi。"""
+        """实例化聊天模型：原生 DashScope 或 OpenAI 兼容端点。"""
+        if spec.provider == "dashscope_compat":
+            from langchain_openai import ChatOpenAI
+
+            base_url = os.getenv(spec.base_url_env or "DASHSCOPE_BASE_URL", "").strip()
+            api_key = os.getenv(spec.api_key_env, "").strip()
+            if not base_url:
+                raise ValueError("dashscope_compat 需要配置 DASHSCOPE_BASE_URL")
+            extra: dict[str, Any] = {}
+            # qwen3 系列默认可能开启思考模式，问答场景关闭以降低延迟与 token
+            if spec.model_name.startswith("qwen3"):
+                extra["extra_body"] = {"enable_thinking": False}
+            return ChatOpenAI(
+                model=spec.model_name,
+                api_key=api_key,
+                base_url=base_url,
+                streaming=True,
+                temperature=0,
+                timeout=45,
+                max_retries=1,
+                **extra,
+            )
         if spec.provider != "dashscope":
             raise ValueError(f"暂不支持的 provider: {spec.provider}")
         return ChatTongyi(model=spec.model_name, streaming=True)

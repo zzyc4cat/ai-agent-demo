@@ -7,6 +7,7 @@ L2 cache key 含当前 Auto 聊天模型 id，避免换模串答案。
 from __future__ import annotations
 
 import hashlib
+import re
 from typing import Any
 
 from langchain_core.documents import Document
@@ -46,6 +47,9 @@ def _serialize_docs(docs: list[Document]) -> list[dict[str, Any]]:
 def _deserialize_docs(rows: list[dict[str, Any]]) -> list[Document]:
     """把缓存字典还原为 Document。"""
     return [Document(page_content=r["page_content"], metadata=r.get("metadata") or {}) for r in rows]
+
+
+_CODE_RE = re.compile(r"\b\d{4}-\d{4}-\d{4}-\d{4}\b")
 
 
 class RagSummarizeService:
@@ -107,6 +111,25 @@ class RagSummarizeService:
         bm25s = [st.bm25 for st in stores]
         retriever = HybridRetriever(vector_search_fn=vector_search, bm25_indexes=bm25s)
         docs, meta = retriever.retrieve(query)
+
+        # 精确代码查询：HMS 代码在向量空间里区分度低，用原文包含匹配补一条通道
+        code_match = _CODE_RE.search(query)
+        if code_match:
+            exact: list[Document] = []
+            for st in stores:
+                exact.extend(st.get_by_text_contains(code_match.group(0), limit=3))
+            if exact:
+                seen = {str((d.metadata or {}).get("chunk_id")) for d in docs}
+                head = []
+                for d in exact:
+                    cid = str((d.metadata or {}).get("chunk_id"))
+                    if cid and cid not in seen:
+                        head.append(d)
+                        seen.add(cid)
+                if head:
+                    docs = (head + docs)[: max(len(docs), 1)]
+                    log_event("rag.exact_code", code=code_match.group(0), hits=len(head))
+
         if not docs:
             log_event("rag.retrieve", level=30, status="empty", query_preview=str(query)[:120], **meta)
         return docs

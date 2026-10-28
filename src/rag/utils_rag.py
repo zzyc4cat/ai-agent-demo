@@ -74,6 +74,7 @@ def merged_chunk_config() -> dict[str, Any]:
     return {
         "chunk_size": int(chunking.get("size") or chroma_config.get("chunk_size") or 800),
         "chunk_overlap": int(chunking.get("overlap") or chroma_config.get("chunk_overlap") or 100),
+        "min_chars": int(chunking.get("min_chars") or 200),
         "separators": chroma_config.get("separators")
         or ["\n\n", "\n", ".", "。", ",", "，", "!", "！", "?", "？", " ", ""],
     }

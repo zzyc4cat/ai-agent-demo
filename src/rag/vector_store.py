@@ -7,6 +7,7 @@ ingest_path 按文件 content_hash 增量；变更则删旧 chunk 再写入。
 from __future__ import annotations
 
 import os
+import re
 from typing import Any
 
 from langchain_chroma import Chroma
@@ -44,6 +45,19 @@ def legacy_sample_collection() -> str:
     return str(rt.get("legacy_sample") or "agent")
 
 
+_FRONT_MATTER = re.compile(r"\A---\s*\n.*?\n---\s*\n", re.S)
+_MEDIA_SECTION = re.compile(r"\n##\s*媒体资源.*\Z", re.S)
+_SOURCE_LINE = re.compile(r"^>\s*来源：.*$\n?", re.M)
+
+
+def clean_markdown_text(text: str) -> str:
+    """去掉 YAML front-matter、来源行与媒体资源段，避免元数据块进入检索。"""
+    text = _FRONT_MATTER.sub("", text or "", count=1)
+    text = _SOURCE_LINE.sub("", text)
+    text = _MEDIA_SECTION.sub("\n", text)
+    return text.strip()
+
+
 class VectorStoreService:
     """向量存储类（按 collection 实例化）。"""
 
@@ -71,6 +85,7 @@ class VectorStoreService:
             separators=cfg["separators"],
             length_function=len,
         )
+        self.min_chars = cfg["min_chars"]
         self.bm25 = Bm25Index(self.collection_name)
 
     def similarity_search_with_score(self, query: str, k: int) -> list[tuple[Document, float]]:
@@ -82,6 +97,20 @@ class VectorStoreService:
             rel = 1.0 / (1.0 + float(dist))
             out.append((doc, rel))
         return out
+
+    def get_by_text_contains(self, text: str, limit: int = 5) -> list[Document]:
+        """按原文包含匹配取块，用于 HMS 代码等精确查询。"""
+        try:
+            data = self.vector_store.get(
+                where_document={"$contains": text},
+                limit=limit,
+                include=["documents", "metadatas"],
+            )
+        except Exception:
+            return []
+        docs = data.get("documents") or []
+        metas = data.get("metadatas") or []
+        return [Document(page_content=t, metadata=m or {}) for t, m in zip(docs, metas)]
 
     def delete_by_source(self, source_path: str) -> None:
         """按源路径删除向量分块并同步 BM25。"""
@@ -106,18 +135,47 @@ class VectorStoreService:
         return len(documents)
 
     def _load_file_documents(self, path: str) -> list[Document]:
-        """按后缀用对应 Loader 读取文件。"""
+        """按后缀用对应 Loader 读取文件；Markdown 先清洗元数据。"""
         lower = path.lower()
         if lower.endswith(".txt"):
             return txt_loader(path)
         if lower.endswith(".pdf"):
             return pdf_loader(path)
         if lower.endswith(".md") or lower.endswith(".markdown"):
-            return md_loader(path)
+            docs = md_loader(path)
+            for d in docs:
+                d.page_content = clean_markdown_text(d.page_content)
+            return [d for d in docs if d.page_content.strip()]
         return []
 
+    def _merge_small_chunks(self, docs: list[Document]) -> list[Document]:
+        """把过短的块并入相邻块，避免“标题块”单独占一个检索位。"""
+        if not docs or self.min_chars <= 0:
+            return docs
+        merged: list[Document] = []
+        buf = ""
+        buf_meta: dict[str, Any] = {}
+        for d in docs:
+            text = (d.page_content or "").strip()
+            if not text:
+                continue
+            if buf:
+                buf = f"{buf}\n\n{text}"
+            else:
+                buf = text
+                buf_meta = dict(d.metadata or {})
+            if len(buf) >= self.min_chars:
+                merged.append(Document(page_content=buf, metadata=buf_meta))
+                buf, buf_meta = "", {}
+        if buf:
+            if merged:
+                merged[-1].page_content = f"{merged[-1].page_content}\n\n{buf}"
+            else:
+                merged.append(Document(page_content=buf, metadata=buf_meta))
+        return merged
+
     def _split_documents(self, documents: list[Document], path: str) -> list[Document]:
-        """Markdown 先按标题切再递归切分，其它直接递归切。"""
+        """Markdown 先按标题切再递归切分，其它直接递归切；最后合并碎片块。"""
         if path.lower().endswith((".md", ".markdown")):
             try:
                 headers = [("#", "h1"), ("##", "h2"), ("###", "h3")]
@@ -126,10 +184,10 @@ class VectorStoreService:
                 for d in documents:
                     parts.extend(md_splitter.split_text(d.page_content))
                 if parts:
-                    return self.spliter.split_documents(parts)
+                    return self._merge_small_chunks(self.spliter.split_documents(parts))
             except Exception:
                 pass
-        return self.spliter.split_documents(documents)
+        return self._merge_small_chunks(self.spliter.split_documents(documents))
 
     def ingest_path(
         self,

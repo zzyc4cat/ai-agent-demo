@@ -2,7 +2,7 @@
 retrieve:
   vector_k: 20
   bm25_k: 20
-  rerank_top_n: 5
+  rerank_top_n: 8
   # RRF 融合分门控：低于此值视为不相关（无 DashScope 重排时使用）
   score_threshold: 0.01
   enable_query_rewrite: false
@@ -29,6 +29,8 @@ collections:
 chunking:
   size: 800
   overlap: 100
+  # 小于该长度的块并入相邻块，避免标题行单独成块
+  min_chars: 200
 
 ingest:
   batch_size: 64

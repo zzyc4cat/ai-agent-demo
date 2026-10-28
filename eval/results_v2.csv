@@ -1,0 +1,20 @@
+﻿id,type,question,expected_doc,hit5,rank,docs,ms,provider,answer,answer_key
+s01,单文档,X1 报 HMS 0300-0100-0001-0003，说明文档列出的常见原因有哪些？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md,1,1,8,1027,deepseek(fallback),不知道。参考资料中与 X1 的 HMS 0300-0100-0001-0003 直接相关的仅有参考资料1，其内容只给出了该代码的名称“热床温控异常，加热器过温”，未列出常见原因；其余资料为其他故障代码或 HMS 通用说明，均未提供该代码的常见原因。,热床加热供电链路异常（AC板/主板）、热床温度传感器故障
+s02,单文档,X1 系列热床最高允许温度是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,1,1,8,961,deepseek(fallback),X1 系列热床最高允许温度是 110℃。依据参考资料1（来源路径：data/tenants/demo/fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md）。,110℃
+s03,单文档,P1 系列热床最高许用温度是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,1,1,8,969,deepseek(fallback),P1 系列热床最高许用温度为 100℃。依据参考资料1（来源路径：data/tenants/demo/fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md）。,100℃
+s04,单文档,A1 mini 的热床最高许用温度是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,1,1,8,1006,deepseek(fallback),A1 mini 的热床最高许用温度是 80℃。依据参考资料1（来源路径：data/tenants/demo/fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md）。,80℃
+s05,单文档,热床设置温度超过上限时，打印机会做什么处理？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,1,1,8,968,deepseek(fallback),当用户在G-Code中设定的热床温度超标时，打印机会自动调整至热床最高允许温度，并发出HMS提示（HMS_0300-0100-0003-0008：热床设置温度超限，已经自动调整至限制温度）。各型号热床最高许用温度：X1 Series 110℃、P1 Series 100℃、A1 100℃、A1mini 80℃。依据参考资料1，来源路径：data/tenants/demo/fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md。,自动调整到最高允许温度并发出 HMS 提示
+s06,单文档,“喷嘴温度异常，加热器可能短路”对应的 HMS 代码是什么？,fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md,1,1,8,950,deepseek(fallback),"对应的 HMS 代码是 **HMS_0300-0200-0001-0001**。
+
+依据：参考资料3（来源路径：data/tenants/demo/fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md）明确写明“HMS_0300-0200-0001-0001: 喷嘴温度异常，加热器可能短路。”",0300-0200-0001-0001
+s07,单文档,喷嘴温度传感器可能开路时，文档建议先检查什么？,fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0007_喷嘴传感器开路.md,1,2,8,958,deepseek(fallback),文档建议先重新插拔 NTC 线，查看错误提示是否消失。依据参考资料7（来源路径：data/tenants/demo/fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0007_喷嘴传感器开路.md）。,热端硅胶套
+s08,单文档,热床不升温且温度显示为 0 时，属于文档里的哪种情形？,fault_codes/X1_fault_code_v1.0_热床不升温排查.md,1,1,8,974,deepseek(fallback),属于“热床的温度信息缺失”这一情形。依据参考资料1（来源：data/tenants/demo/fault_codes/X1_fault_code_v1.0_热床不升温排查.md），其中写明“这种情形一般是热床的温度信息缺失导致的”。,情形一：热床温度显示为 0
+s09,单文档,打印机检测不到 AMS 时，操作指导分哪几步？,fault_codes/X1_fault_code_v1.0_AMS_is_not_detected_by_the_printer.md,1,2,8,971,deepseek(fallback),不知道。参考资料中没有给出“打印机检测不到 AMS 时”完整的操作指导分步清单；资料2、4仅涉及6pin线及主板电阻测量等部分排查内容，资料1为AMS上电故障排查，均不足以回答该问题。,Pin 脚检查、线缆连接检查、电阻测量
+s10,单文档,AMS 无法上电时，怎么确认是不是供电问题？,fault_codes/X1_fault_code_v1.0_ams-power-failure.md,1,1,8,970,deepseek(fallback),"可以按以下步骤确认是否为供电问题（依据参考资料1、5，来源均为 data/tenants/demo/fault_codes/X1_fault_code_v1.0_ams-power-failure.md）：
+
+1. 检查 4Pin 和 6Pin 插头/线缆：稍微摇晃或弯曲插头线缆，或稍微拔出插头（不要完全拔出），看 AMS 是否能短时间被打印机检测到，以缩小到插头/电缆故障（参考资料5）。
+2. 用万用表测电压：从缓冲器断开 4Pin 线缆，开启打印机测 4Pin 线缆电压；再将 4Pin 接回打印机、断开 AMS 端 6Pin 线缆，测 6Pin 电缆电压，确认 24V 是否正常（参考资料5）。
+3. 若外部引脚和电压正常但故障仍在，检查 AMS 内部电源线缆是否松动/脱落及内部电压是否正常（24V），并检查 AMS 主板针脚是否有进水腐蚀（参考资料5）。
+4. 若 AMS 主板 24V 也正常，拔掉主板其他线，只保留电源线和通信线（485），测 U2 芯片上 GND/3.3V 和 GND/6.6V 是否正常，同时观察屏幕是否识别到 AMS；若能被检测到，再依次接回其他模块线，接回哪条线时无法上电即可定位故障部件（参考资料1）。
+
+按上述步骤测量排查后，根据测试结果联系售后服务团队获得进一步帮助（参考资料1、5）。",查 Pin 脚、线缆连接，再测量电压

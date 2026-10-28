@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { askStream, fetchTenants, sendFeedback, type Citation } from "./api";
+import { askStream, fetchConversation, fetchTenants, sendFeedback, type Citation } from "./api";
 
 type Msg = {
   id: string;
@@ -36,6 +36,33 @@ export default function App() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // 刷新后恢复当前会话
+  useEffect(() => {
+    const saved = sessionStorage.getItem("kb_conv");
+    const key = sessionStorage.getItem("kb_key");
+    if (!saved || !key) return;
+    fetchConversation(saved, key).then((rows) => {
+      if (!rows.length) return;
+      setConvId(saved);
+      setMessages(
+        rows.map((r) => ({
+          id: r.id,
+          role: r.role,
+          text: r.content,
+          citations: r.citations,
+          latency: r.latency_ms ?? undefined,
+          refused: !!r.refused,
+        })),
+      );
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (convId) sessionStorage.setItem("kb_conv", convId);
+    else sessionStorage.removeItem("kb_conv");
+  }, [convId]);
 
   function saveKey() {
     sessionStorage.setItem("kb_key", apiKey.trim());

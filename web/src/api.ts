@@ -105,3 +105,28 @@ export async function sendFeedback(opts: {
     }),
   });
 }
+
+export type StoredMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  citations?: Citation[];
+  latency_ms?: number | null;
+  refused?: number | boolean;
+};
+
+export async function fetchConversation(
+  id: string,
+  apiKey: string,
+): Promise<StoredMessage[]> {
+  try {
+    const res = await fetch(`/admin/conversations/${id}`, {
+      headers: { "X-API-Key": apiKey },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.messages) ? data.messages : [];
+  } catch {
+    return [];
+  }
+}

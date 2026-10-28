@@ -123,23 +123,25 @@ class RagSummarizeService:
         retriever = HybridRetriever(vector_search_fn=vector_search, bm25_indexes=bm25s)
         docs, meta = retriever.retrieve(query)
 
-        # 精确代码查询：HMS 代码在向量空间里区分度低，用原文包含匹配补一条通道
+        # 精确代码查询：HMS 代码在向量空间里区分度低，命中块直接提升到队首
         code_match = _CODE_RE.search(query)
         if code_match:
             exact: list[Document] = []
+            seen: set[str] = set()
             for st in stores:
-                exact.extend(st.get_by_text_contains(code_match.group(0), limit=3))
-            if exact:
-                seen = {str((d.metadata or {}).get("chunk_id")) for d in docs}
-                head = []
-                for d in exact:
+                for d in st.get_by_text_contains(code_match.group(0), limit=3):
                     cid = str((d.metadata or {}).get("chunk_id"))
                     if cid and cid not in seen:
-                        head.append(d)
+                        exact.append(d)
                         seen.add(cid)
-                if head:
-                    docs = (head + docs)[: max(len(docs), 1)]
-                    log_event("rag.exact_code", code=code_match.group(0), hits=len(head))
+            if exact:
+                rest = [
+                    d
+                    for d in docs
+                    if str((d.metadata or {}).get("chunk_id")) not in seen
+                ]
+                docs = (exact + rest)[: max(len(docs), len(exact))]
+                log_event("rag.exact_code", code=code_match.group(0), hits=len(exact))
 
         if not docs:
             log_event("rag.retrieve", level=30, status="empty", query_preview=str(query)[:120], **meta)

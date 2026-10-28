@@ -8,22 +8,21 @@
 - `[ ]` 待办　`[~]` 进行中　`[x]` 完成　`[!]` 阻塞
 - 归属里程碑：M1 证据 / M2 上线 / M3 交付 / M4 可面试（见 `PRD.md` 6.2）
 
-## 状态快照（2026-10-26 收工）
+## 状态快照（2026-10-28）
 
 - **语料**：44 篇，`corpus.csv` 校验通过；索引 234 块（已清洗 front-matter/来源行/媒体资源，已合并 <200 字碎片）
-- **评测**：50 条 `eval/eval_set_v1.csv`；最新结果 `eval/results_full2.csv`
-- **基线**：文档命中 40/40；可答题拒答 0；库外拒答 9/10；平均延迟 1.1s（DeepSeek 通道）
-- **已知问题**：s07 答错（应按小节顺序取「热端硅胶套」）；n06 实为可答题（语料含喷嘴规格），需改标注；s08 为同义表述，可接受
-- **模型**：qwen-turbo 429（模型级限流），评测走 DeepSeek 降级；`config/models.yml` 尚未接入 qwen3.8-flash
-- **未提交**：`config/rag_runtime.yml`、`src/rag/*`、`prompts/rag_summarize.txt`、`scripts/eval_kb.py`、`eval/`、`data/tenants/NOTICE.md` 等（收工前未 commit）
-- **回滚点**：commit `c769ff9` / tag `pre-pivot`
+- **评测**：50 条 `eval/eval_set_v1.csv`；最新结果 `eval/results_qwen.csv`
+- **基线**：文档命中 40/40；可答题拒答 0；库外拒答 10/10；50 题约 300 秒（约 6 秒/题）
+- **模型**：qwen3.8-flash 已接入（`dashscope_compat`，关闭思考模式，45 秒超时），不再 429
+- **已知问题**：m02 的 X1 侧对比依据不足（只能给 A1 侧）；s07 已修复
+- **回滚点**：commit `178812b`（上一版 `c769ff9` / tag `pre-pivot`）
 
-### 明天开工顺序
+### 下一步（M2 上线）
 
-1. `config/models.yml` 接入 qwen3.8-flash（替换 qwen-turbo），跑一次确认不再 429
-2. 清理评测集：n06 改为可答题或删除；s07 换更明确的问法
-3. 提交本批改动（`fix: 清洗元数据块、合并碎片 chunk、补充对比与顺序规则`）
-4. 进入 M2：部署 + 鉴权 + 限流 + 日志
+1. 公网部署（Docker + Nginx 或 Cloudflare Tunnel）
+2. API Key 鉴权 + 限流
+3. 结构化日志 + trace_id + 成本统计
+4. `/health` 健康检查
 
 ## 本周（W1 · M1 证据）
 
@@ -32,7 +31,7 @@
 - [ ] P0 自写《设备知识管理规范》10 页（5 个小节：元数据、版本、引用、权限、更新）
 - [x] P0 建 50 条评测集：40 可答（单文档 20 / 概念 6 / 跨文档 8 / 多跳 6）+ 10 库外
 - [x] P0 评测脚本 `scripts/eval_kb.py`：命中、延迟、拒答、成本口径
-- [x] P0 跑基线：命中 40/40、拒答 0、库外 9/10、平均 1.1s（`eval/results_full2.csv`）
+- [x] P0 跑基线：命中 40/40、拒答 0、库外 10/10、50 题约 300s（`eval/results_qwen.csv`）
 - [x] P1 badcase 归因：front-matter 成块、碎片 chunk、对比题过度保守、代码查询向量弱
 - [x] P1 修 top3：清洗元数据、合并碎片、top_n=8、代码精确通道、提示词补两条规则
 - [ ] P1 写 1500 字《基线评测报告》
@@ -78,3 +77,4 @@
 | 2026-10-26 | 评测集 50 条 + `eval_kb.py` + 基线（命中 40/40、拒答 0、库外 9/10、1.1s） |
 | 2026-10-26 | 切分修复：合并碎片块 + 清洗元数据，530 → 234 块；HMS 代码精确通道 |
 | 2026-10-26 | 模型对比：qwen3.8-flash vs deepseek-flash，价格与实测 token 已记录 |
+| 2026-10-28 | 接入 qwen3.8-flash（dashscope_compat + 关思考），全量 50 条跑通；n06 标注修正；s07 已答对 |

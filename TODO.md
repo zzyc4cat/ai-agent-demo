@@ -54,8 +54,10 @@
 - [x] 检索隔离：每租户独立 collection（demo 复用 agent_sample，demo2 独立）
 - [x] API 按 `X-Tenant` 路由，未知租户返回 404
 - [x] 隔离测试 `tests/test_isolation.py`（4 条，全部通过）
-- [ ] 会话 / 反馈 / badcase 按租户落库
-- [ ] 对外 React 对话页（SSE + 引用 + 反馈）
+- [x] 反馈按租户落库（`feedback` 表 + `POST /feedback`）
+- [x] 对外 React 对话页（Vite + TS，SSE 流式、引用卡片、点赞点踩、租户选择）
+- [x] `POST /kb/stream` SSE 接口（meta → citations → token* → done）
+- [ ] 会话历史按租户落库
 - [ ] 后台：文档管理、badcase、租户配置
 
 ### M4 可面试（W6）

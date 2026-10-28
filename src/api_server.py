@@ -7,6 +7,7 @@ skill 必须在 SKILL_WHITELIST。异常对客户端脱敏。
 """
 from __future__ import annotations
 
+import json
 import os
 import secrets
 import time
@@ -18,7 +19,8 @@ from threading import Lock
 from typing import Any
 
 from fastapi import FastAPI, Header, HTTPException, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from agent.react_agent import ReactAgent
@@ -27,7 +29,7 @@ from agent.tools.middleware import SKILL_WHITELIST
 from rag.rag_service import RagSummarizeService
 from rag.tenant import load_tenant, list_tenants
 from services import user_service
-from services.storage import ensure_db
+from services.storage import ensure_db, get_conn
 from utils.logger_handler import log_event
 
 _agent: ReactAgent | None = None
@@ -37,6 +39,7 @@ RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "10"))
 _rate_buckets: dict[str, deque[float]] = {}
 _rate_lock = Lock()
 INDEX_HTML = Path(__file__).resolve().parents[1] / "web" / "static" / "index.html"
+DIST_DIR = Path(__file__).resolve().parents[1] / "web" / "dist"
 
 
 @asynccontextmanager
@@ -47,6 +50,9 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="个人综合助手 API", version="0.2.0", lifespan=lifespan)
+
+if DIST_DIR.is_dir():
+    app.mount("/app", StaticFiles(directory=str(DIST_DIR), html=True), name="web")
 
 
 @app.middleware("http")
@@ -172,7 +178,9 @@ def _validate_skill(skill: str) -> str:
 
 @app.get("/", include_in_schema=False)
 def index():
-    """浏览器入口：返回内置问答页；文件缺失时给出接口提示。"""
+    """浏览器入口：优先 React 页面，其次内置静态页。"""
+    if DIST_DIR.is_dir():
+        return RedirectResponse(url="/app/")
     if INDEX_HTML.is_file():
         return FileResponse(INDEX_HTML)
     return {"status": "ok", "docs": "/docs", "kb": "/kb/ask"}
@@ -318,4 +326,110 @@ def kb_ask(
         citations=citations,
         latency_ms=latency,
         refused=refused,
+    )
+
+
+class FeedbackRequest(BaseModel):
+    message_id: str = Field(..., min_length=1, max_length=64)
+    rating: str = Field(..., pattern="^(up|down)$")
+    reason: str | None = Field(default=None, max_length=200)
+
+
+@app.post("/feedback")
+def feedback(
+    body: FeedbackRequest,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    x_tenant: str | None = Header(default="demo", alias="X-Tenant"),
+) -> dict[str, Any]:
+    """记录点赞/点踩，进入 badcase 池。"""
+    require_api_key(authorization, x_api_key)
+    tenant_id = (x_tenant or "demo").strip() or "demo"
+    try:
+        load_tenant(tenant_id)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant_id}") from e
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO feedback(tenant_id, message_id, rating, reason) VALUES(?,?,?,?)",
+            (tenant_id, body.message_id, body.rating, body.reason),
+        )
+    log_event("api.feedback", tenant=tenant_id, rating=body.rating, message_id=body.message_id)
+    return {"ok": True}
+
+
+def _sse(event: str, data: dict[str, Any]) -> str:
+    """拼一条 SSE 消息。"""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+@app.post("/kb/stream")
+def kb_stream(
+    body: AskRequest,
+    request: Request,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    x_tenant: str | None = Header(default="demo", alias="X-Tenant"),
+):
+    """SSE 流式问答：meta → citations → token* → done。"""
+    require_api_key(authorization, x_api_key)
+    check_rate_limit(_client_key(authorization, x_api_key, request))
+    tenant_id = (x_tenant or "demo").strip() or "demo"
+    try:
+        load_tenant(tenant_id)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant_id}") from e
+
+    question = body.question.strip()
+    rid = uuid.uuid4().hex[:12]
+    svc = _get_kb(tenant_id)
+    docs = svc.retrieve_docs(question)
+    citations = [
+        {
+            "source": str((d.metadata or {}).get("source_path", "")),
+            "chunk_index": (d.metadata or {}).get("chunk_index"),
+            "snippet": (d.page_content or "")[:300],
+        }
+        for d in docs[:5]
+    ]
+    context = "\n\n".join(
+        f"[参考资料{i}] 来源:{(d.metadata or {}).get('source_path', '')}\n{d.page_content}"
+        for i, d in enumerate(docs, start=1)
+    )
+
+    def generate():
+        started = time.perf_counter()
+        yield _sse("meta", {"request_id": rid, "tenant": tenant_id})
+        yield _sse("citations", {"citations": citations})
+        if not docs:
+            yield _sse("token", {"text": "不知道"})
+            yield _sse("done", {"request_id": rid, "refused": True, "latency_ms": 0})
+            return
+        parts: list[str] = []
+        try:
+            for chunk in svc._chain().stream({"input": question, "context": context}):
+                text = chunk if isinstance(chunk, str) else getattr(chunk, "content", "")
+                if text:
+                    parts.append(str(text))
+                    yield _sse("token", {"text": str(text)})
+        except Exception as e:  # noqa: BLE001
+            log_event("api.kb_stream", level=40, status="error", error=str(e)[:300], request_id=rid)
+            yield _sse("error", {"message": "生成失败，请稍后重试"})
+            return
+        full = "".join(parts)
+        latency = int((time.perf_counter() - started) * 1000)
+        log_event("api.kb_stream", request_id=rid, tenant=tenant_id, ms=latency, docs=len(docs))
+        yield _sse(
+            "done",
+            {
+                "request_id": rid,
+                "refused": full.strip().startswith("不知道"),
+                "latency_ms": latency,
+            },
+        )
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

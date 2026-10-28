@@ -2485,3 +2485,9 @@
 
 ### [2026-10-28 15:18:42] stage=rag.retrieve req=- user=- model=-
 - vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 15:26:42] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 系列热床最高允许温度是多少？
+
+### [2026-10-28 15:26:43] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash

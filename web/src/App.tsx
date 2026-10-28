@@ -22,6 +22,19 @@ type Msg = {
   feedback?: "up" | "down";
 };
 
+/** 数据库存的是 UTC，展示时转本地。 */
+function fmtTime(raw?: string): string {
+  if (!raw) return "";
+  const d = new Date(raw.replace(" ", "T") + "Z");
+  if (Number.isNaN(d.getTime())) return raw.slice(5, 16);
+  return d.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export default function App() {
   const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("kb_key") ?? "");
   const [showKey, setShowKey] = useState(() => !sessionStorage.getItem("kb_key"));
@@ -305,7 +318,7 @@ export default function App() {
                   {c.title || "未命名对话"}
                 </div>
                 <div className="meta">
-                  {c.messages} 条 · {c.created_at?.slice(5, 16)}
+                  {c.messages} 条 · {fmtTime(c.created_at)}
                 </div>
                 <button
                   className="more"
@@ -391,8 +404,9 @@ export default function App() {
           </main>
 
           <footer>
-            <div className="inner">
+            <div className="composer">
               <input
+                type="text"
                 value={input}
                 placeholder="输入问题，回车发送"
                 onChange={(e) => setInput(e.target.value)}
@@ -403,7 +417,7 @@ export default function App() {
                   }
                 }}
               />
-              <button onClick={send} disabled={sending}>
+              <button className="send" onClick={send} disabled={sending}>
                 {sending ? "生成中" : "发送"}
               </button>
             </div>

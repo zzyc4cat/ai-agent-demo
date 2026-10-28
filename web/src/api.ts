@@ -274,3 +274,44 @@ export async function restoreDoc(tenant: string, source: string): Promise<void> 
   });
   if (!res.ok) throw new Error(await failMessage(res));
 }
+
+export type KbTask = {
+  id: string;
+  tenant_id: string;
+  kind: string;
+  target: string;
+  status: string;
+  message?: string;
+  chunks: number;
+};
+
+export async function uploadDoc(tenant: string, file: File): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("tenant", tenant);
+  const res = await fetch("/admin/docs/upload", {
+    method: "POST",
+    headers: headers(),
+    body: form,
+  });
+  if (!res.ok) throw new Error(await failMessage(res));
+  const data = await res.json();
+  return data.task_id;
+}
+
+export async function importUrl(tenant: string, url: string): Promise<string> {
+  const res = await fetch("/admin/docs/import_url", {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ tenant, url }),
+  });
+  if (!res.ok) throw new Error(await failMessage(res));
+  const data = await res.json();
+  return data.task_id;
+}
+
+export async function fetchTask(id: string): Promise<KbTask> {
+  const res = await fetch(`/admin/tasks/${id}`, { headers: headers() });
+  if (!res.ok) throw new Error(await failMessage(res));
+  return res.json();
+}

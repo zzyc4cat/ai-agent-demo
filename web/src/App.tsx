@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import {
   apiLogin,
   apiLogout,
@@ -11,11 +12,14 @@ import {
   fetchAudit,
   fetchConversation,
   fetchConversations,
+  fetchTask,
   fetchTenants,
   hasToken,
+  importUrl,
   patchConversation,
   restoreDoc,
   sendFeedback,
+  uploadDoc,
   type AdminAudit,
   type AdminDoc,
   type Citation,
@@ -489,6 +493,8 @@ function AdminPage({ onBack }: { onBack: () => void }) {
   const [tab, setTab] = useState<"docs" | "audit">("docs");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
+  const [url, setUrl] = useState("");
+  const [taskMsg, setTaskMsg] = useState("");
 
   async function load(t = tenant) {
     try {
@@ -498,6 +504,52 @@ function AdminPage({ onBack }: { onBack: () => void }) {
       setError("");
     } catch (e) {
       setError((e as Error).message);
+    }
+  }
+
+  function pollTask(id: string) {
+    setTaskMsg("入库中…");
+    const timer = window.setInterval(async () => {
+      try {
+        const t = await fetchTask(id);
+        if (t.status === "done") {
+          window.clearInterval(timer);
+          setTaskMsg(`完成：${t.target.split("/").pop()}（${t.chunks} 块）`);
+          await load();
+        } else if (t.status === "failed") {
+          window.clearInterval(timer);
+          setTaskMsg(`失败：${t.message || "未知原因"}`);
+        } else {
+          setTaskMsg(`处理中：${t.message || t.status}`);
+        }
+      } catch {
+        window.clearInterval(timer);
+        setTaskMsg("任务状态查询失败");
+      }
+    }, 1500);
+  }
+
+  async function onUpload(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setTaskMsg(`上传中：${file.name}`);
+    try {
+      pollTask(await uploadDoc(tenant, file));
+    } catch (err) {
+      setTaskMsg((err as Error).message);
+    }
+  }
+
+  async function onImport() {
+    const u = url.trim();
+    if (!u) return;
+    setTaskMsg("提交导入…");
+    try {
+      setUrl("");
+      pollTask(await importUrl(tenant, u));
+    } catch (err) {
+      setTaskMsg((err as Error).message);
     }
   }
 
@@ -566,6 +618,22 @@ function AdminPage({ onBack }: { onBack: () => void }) {
             审计日志
           </button>
         </div>
+
+        <div className="admin-actions">
+          <label className="upload-btn">
+            上传文件
+            <input type="file" accept=".md,.markdown,.txt,.pdf" onChange={onUpload} />
+          </label>
+          <input
+            className="url-input"
+            placeholder="粘贴网页地址（https://...）"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onImport()}
+          />
+          <button onClick={onImport}>导入网址</button>
+        </div>
+        {taskMsg && <div className="task-msg">{taskMsg}</div>}
 
         {tab === "docs" ? (
           <table className="doc-table">

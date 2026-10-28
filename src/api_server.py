@@ -18,7 +18,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -688,3 +688,58 @@ def admin_audit(
 ) -> dict[str, Any]:
     """文档操作审计日志。"""
     return {"tenant": tenant, "items": admin_service.list_audit(tenant, min(max(limit, 1), 500))}
+
+
+@app.post("/admin/docs/upload")
+async def admin_upload_doc(
+    file: UploadFile = File(...),
+    tenant: str = Form("demo"),
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """上传文件并异步入库；返回任务 id。"""
+    try:
+        load_tenant(tenant)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant}") from e
+    content = await file.read()
+    try:
+        task_id = admin_service.submit_file(
+            tenant, file.filename or "upload.md", content, admin["username"]
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return {"task_id": task_id, "tenant": tenant}
+
+
+class UrlImport(BaseModel):
+    tenant: str = "demo"
+    url: str = Field(..., min_length=8, max_length=2000)
+
+
+@app.post("/admin/docs/import_url")
+def admin_import_url(
+    body: UrlImport,
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """按网址抓取并异步入库；返回任务 id。"""
+    try:
+        load_tenant(body.tenant)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"租户不存在: {body.tenant}") from e
+    try:
+        task_id = admin_service.submit_url(body.tenant, body.url, admin["username"])
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return {"task_id": task_id, "tenant": body.tenant}
+
+
+@app.get("/admin/tasks/{task_id}")
+def admin_task(
+    task_id: str,
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """查询入库任务状态。"""
+    task = admin_service.get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    return task

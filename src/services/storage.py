@@ -124,6 +124,19 @@ CREATE TABLE IF NOT EXISTS kb_audit (
     detail TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS kb_tasks (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    target TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    message TEXT,
+    chunks INTEGER NOT NULL DEFAULT 0,
+    operator TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 """
 
 

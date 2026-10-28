@@ -16,6 +16,7 @@ FastAPI + React + Chroma + SQLite，单机可跑，支持最小多租户与管�
 | [`docs/vibe-coding.md`](docs/vibe-coding.md) | 协作与开发规范 |
 | [`docs/设备知识管理规范.md`](docs/设备知识管理规范.md) | 入库、版本、删除、审计、备份规则 |
 | [`docs/基线评测报告.md`](docs/基线评测报告.md) | 评测口径与结果 |
+| [`docs/模拟内测报告.md`](docs/模拟内测报告.md) | 10 角色 × 100 问的模拟内测 |
 | [`development.md`](development.md) | 命令与回归清单 |
 | [`TODO.md`](TODO.md) | 当前状态快照 |
 

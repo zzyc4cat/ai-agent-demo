@@ -4933,3 +4933,708 @@
 
 ### [2026-10-28 18:31:52] stage=model.select req=- user=- model=qwen3_8_flash
 - mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:04] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=热床最高能到多少度？
+
+### [2026-10-28 19:07:04] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:07] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=第一次打印前要校准吗？
+
+### [2026-10-28 19:07:07] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:10] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=热床不升温、显示 0，是哪里坏了？
+
+### [2026-10-28 19:07:10] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:20] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.031544957774465976 query_preview=打印机找不到 AMS 怎么办？
+
+### [2026-10-28 19:07:20] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:28] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=屏幕黑屏但背光闪，跟全黑一样处理吗？
+
+### [2026-10-28 19:07:28] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:37] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=固件升级失败怎么办？
+
+### [2026-10-28 19:07:37] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:49] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=喷嘴堵了怎么清理？
+
+### [2026-10-28 19:07:49] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:55] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=清理热端裹头要多久？
+
+### [2026-10-28 19:07:55] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:07:58] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=HMS 是什么意思？
+
+### [2026-10-28 19:07:58] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:08:05] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.028309409888357256 query_preview=这台机器保修几年？
+
+### [2026-10-28 19:08:05] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:08:07] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=AMS 一直退料进料循环？
+
+### [2026-10-28 19:08:07] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:08:16] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.03200204813108039 query_preview=AMS 上不了电怎么查？
+
+### [2026-10-28 19:08:16] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:08:23] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=指示灯红色是什么意思？
+
+### [2026-10-28 19:08:23] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:08:29] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03128054740957967 query_preview=找不到 AMS 分几步排查？
+
+### [2026-10-28 19:08:29] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:08:36] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=AMS 主板版本怎么确认？
+
+### [2026-10-28 19:08:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:08:41] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.030798389007344232 query_preview=能用第三方耗材吗？
+
+### [2026-10-28 19:08:41] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:05] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=热床最高能到多少度？
+
+### [2026-10-28 19:09:06] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:10] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=第一次打印前要校准吗？
+
+### [2026-10-28 19:09:10] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:18] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=热床不升温、显示 0，是哪里坏了？
+
+### [2026-10-28 19:09:18] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:26] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.031544957774465976 query_preview=打印机找不到 AMS 怎么办？
+
+### [2026-10-28 19:09:26] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:32] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=屏幕黑屏但背光闪，跟全黑一样处理吗？
+
+### [2026-10-28 19:09:32] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:42] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=固件升级失败怎么办？
+
+### [2026-10-28 19:09:42] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:50] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=喷嘴堵了怎么清理？
+
+### [2026-10-28 19:09:50] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:09:56] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=清理热端裹头要多久？
+
+### [2026-10-28 19:09:56] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:00] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=HMS 是什么意思？
+
+### [2026-10-28 19:10:00] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:05] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.028309409888357256 query_preview=这台机器保修几年？
+
+### [2026-10-28 19:10:05] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:07] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=AMS 一直退料进料循环？
+
+### [2026-10-28 19:10:07] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:14] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.03200204813108039 query_preview=AMS 上不了电怎么查？
+
+### [2026-10-28 19:10:14] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:24] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=指示灯红色是什么意思？
+
+### [2026-10-28 19:10:24] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:30] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03128054740957967 query_preview=找不到 AMS 分几步排查？
+
+### [2026-10-28 19:10:30] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:39] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=AMS 主板版本怎么确认？
+
+### [2026-10-28 19:10:39] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:44] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.030798389007344232 query_preview=能用第三方耗材吗？
+
+### [2026-10-28 19:10:44] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:47] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=手机 App 能看工单吗？
+
+### [2026-10-28 19:10:47] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:51] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03200204813108039 query_preview=AMS 最多几色？
+
+### [2026-10-28 19:10:51] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:10:54] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03225806451612903 query_preview=切刀卡住怎么办？
+
+### [2026-10-28 19:10:54] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:04] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.029083245521601686 query_preview=AMS 烘干温度多少？
+
+### [2026-10-28 19:11:04] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:07] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.031754032258064516 query_preview=0300-0100-0001-0003 什么故障？
+
+### [2026-10-28 19:11:07] stage=rag.exact_code req=- user=- model=-
+- code=0300-0100-0001-0003 hits=1
+
+### [2026-10-28 19:11:07] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:11] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03200204813108039 query_preview=0300-0200-0001-0001 是哪个部件？
+
+### [2026-10-28 19:11:11] stage=rag.exact_code req=- user=- model=-
+- code=0300-0200-0001-0001 hits=1
+
+### [2026-10-28 19:11:11] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:15] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=26 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=热床过温和 AC 板故障怎么区分？
+
+### [2026-10-28 19:11:15] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:29] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=喷嘴加热短路和传感器开路区别？
+
+### [2026-10-28 19:11:29] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:36] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=报 0300-0100-0001-0008 怎么处理？
+
+### [2026-10-28 19:11:36] stage=rag.exact_code req=- user=- model=-
+- code=0300-0100-0001-0008 hits=3
+
+### [2026-10-28 19:11:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:48] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=屏幕黑屏是屏幕还是主板？
+
+### [2026-10-28 19:11:48] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:54] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=Z 轴回中失败两种原因？
+
+### [2026-10-28 19:11:54] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:11:59] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=耗材断在料管里怎么办？
+
+### [2026-10-28 19:11:59] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:06] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=错误码 9999-9999 是什么？
+
+### [2026-10-28 19:12:06] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:10] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=24 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=怎么导出日志给客服？
+
+### [2026-10-28 19:12:10] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:22] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=26 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=挤出机堵了核心步骤？
+
+### [2026-10-28 19:12:22] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:28] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=喷嘴堵塞三种处理？
+
+### [2026-10-28 19:12:28] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:34] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=热端裹头清理工具？
+
+### [2026-10-28 19:12:34] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:37] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=热床不粘怎么处理？
+
+### [2026-10-28 19:12:37] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:40] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=多久保养一次？
+
+### [2026-10-28 19:12:40] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:44] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=风扇噪音大怎么办？
+
+### [2026-10-28 19:12:44] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:52] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=皮带松了怎么调？
+
+### [2026-10-28 19:12:52] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:12:56] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=换喷嘴要注意什么？
+
+### [2026-10-28 19:12:56] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:01] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.03125 query_preview=打印机放阳台可以吗？
+
+### [2026-10-28 19:13:01] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:05] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.031544957774465976 query_preview=废料怎么处理？
+
+### [2026-10-28 19:13:05] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:12] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=PETG 风扇限制？
+
+### [2026-10-28 19:13:12] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:15] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=PLA 翘边调什么？
+
+### [2026-10-28 19:13:15] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:19] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 热床最高多少？
+
+### [2026-10-28 19:13:19] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:22] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=P1 热床最高多少？
+
+### [2026-10-28 19:13:22] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:25] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=A1 mini 热床最高？
+
+### [2026-10-28 19:13:25] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:27] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03131881575727918 query_preview=打印温度多少合适？
+
+### [2026-10-28 19:13:27] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:33] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03225806451612903 query_preview=第一层速度多少？
+
+### [2026-10-28 19:13:33] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:36] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03128054740957967 query_preview=支撑怎么设置？
+
+### [2026-10-28 19:13:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:41] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.030309988518943745 query_preview=打印 ABS 要注意什么？
+
+### [2026-10-28 19:13:41] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:44] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=层纹怎么消除？
+
+### [2026-10-28 19:13:44] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:48] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=固件版本在哪看？
+
+### [2026-10-28 19:13:48] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:52] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=升级失败怎么回滚？
+
+### [2026-10-28 19:13:52] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:13:55] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=AMS 主板版本怎么确认？
+
+### [2026-10-28 19:13:55] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:00] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=开机屏幕起不来第一步？
+
+### [2026-10-28 19:14:00] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:04] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=固件升级失败原因？
+
+### [2026-10-28 19:14:04] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:08] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.030309988518943745 query_preview=二手机器要检查什么？
+
+### [2026-10-28 19:14:08] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:10] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=序列号在哪？
+
+### [2026-10-28 19:14:10] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:19] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=能降级固件吗？
+
+### [2026-10-28 19:14:19] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:22] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=Z 轴异响怎么办？
+
+### [2026-10-28 19:14:22] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:27] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.026547116736990152 query_preview=保修能转移吗？
+
+### [2026-10-28 19:14:27] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:30] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=用户说触摸屏没反应，先查什么？
+
+### [2026-10-28 19:14:30] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:34] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=屏幕全黑和背光闪处理一样吗？
+
+### [2026-10-28 19:14:34] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:41] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=切刀卡住怎么回复？
+
+### [2026-10-28 19:14:41] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:49] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=热床过温怎么解释？
+
+### [2026-10-28 19:14:49] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:14:54] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03131881575727918 query_preview=升级失败怎么让用户交日志？
+
+### [2026-10-28 19:14:54] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:03] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=用户要退款怎么办？
+
+### [2026-10-28 19:15:03] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:08] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.03009207275993712 query_preview=用户问发票怎么开？
+
+### [2026-10-28 19:15:08] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:09] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.03057889822595705 query_preview=用户问保修期？
+
+### [2026-10-28 19:15:09] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:12] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=40 rerank=rrf rerank_top=8 gated=8 top_score=0.01639344262295082 query_preview=用户说打印有异味？
+
+### [2026-10-28 19:15:12] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:17] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.031024531024531024 query_preview=用户问喷头寿命？
+
+### [2026-10-28 19:15:17] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:20] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 和 P1 热床温度上限一样吗？
+
+### [2026-10-28 19:15:20] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:23] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=A1 mini 热床最高？
+
+### [2026-10-28 19:15:23] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:26] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03225806451612903 query_preview=HMS 0300 代表哪个部件？
+
+### [2026-10-28 19:15:26] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:31] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=HMS 告警等级 0001/0002/0003？
+
+### [2026-10-28 19:15:31] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:39] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.031754032258064516 query_preview=多台设备怎么统一固件？
+
+### [2026-10-28 19:15:39] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:42] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.031544957774465976 query_preview=怎么批量导出日志？
+
+### [2026-10-28 19:15:42] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:50] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.030117753623188408 query_preview=型号差异在哪查？
+
+### [2026-10-28 19:15:50] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:15:55] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=40 rerank=rrf rerank_top=8 gated=8 top_score=0.01639344262295082 query_preview=设备离线怎么排查？
+
+### [2026-10-28 19:15:55] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:00] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.030536130536130537 query_preview=能远程重启吗？
+
+### [2026-10-28 19:16:00] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:04] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=固件版本兼容性？
+
+### [2026-10-28 19:16:04] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:15] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=HMS 全称？
+
+### [2026-10-28 19:16:15] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:17] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=HMS 局限？
+
+### [2026-10-28 19:16:17] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:21] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=HMS 0003 官方处理步骤？
+
+### [2026-10-28 19:16:21] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:28] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=热床不升温和过温区别？
+
+### [2026-10-28 19:16:28] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:36] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.031754032258064516 query_preview=帮我核对 AMS 上电排查步骤？
+
+### [2026-10-28 19:16:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:43] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=打印 PETG 风扇设置？
+
+### [2026-10-28 19:16:43] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:49] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=写一段 HMS 介绍？
+
+### [2026-10-28 19:16:49] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:16:57] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.030886196246139225 query_preview=引用官方原文？
+
+### [2026-10-28 19:16:57] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:01] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.031754032258064516 query_preview=有没有官方视频？
+
+### [2026-10-28 19:17:01] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:05] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.029957522915269395 query_preview=这台机器评测？
+
+### [2026-10-28 19:17:05] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:10] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03177805800756621 query_preview=A1 mini 屏幕怎么换？
+
+### [2026-10-28 19:17:10] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:13] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=Prusa 校准步骤？
+
+### [2026-10-28 19:17:13] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:17] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=2024 固件号？
+
+### [2026-10-28 19:17:17] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:21] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.02877846790890269 query_preview=包装尺寸？
+
+### [2026-10-28 19:17:21] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:24] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03200204813108039 query_preview=支持激光雕刻吗？
+
+### [2026-10-28 19:17:24] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:27] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=手机 App 叫什么？
+
+### [2026-10-28 19:17:27] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:30] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.02786377708978328 query_preview=哪里买配件？
+
+### [2026-10-28 19:17:30] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:36] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.030117753623188408 query_preview=打印机多重？
+
+### [2026-10-28 19:17:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:40] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.030158730158730156 query_preview=如何删除账户？
+
+### [2026-10-28 19:17:40] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 19:17:42] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.030886196246139225 query_preview=噪音多少分贝？
+
+### [2026-10-28 19:17:42] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash

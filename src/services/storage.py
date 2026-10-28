@@ -114,6 +114,16 @@ CREATE TABLE IF NOT EXISTS kb_messages (
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (conversation_id) REFERENCES kb_conversations(id)
 );
+
+CREATE TABLE IF NOT EXISTS kb_audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tenant_id TEXT NOT NULL,
+    operator TEXT NOT NULL,
+    action TEXT NOT NULL,
+    target TEXT NOT NULL,
+    detail TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 """
 
 

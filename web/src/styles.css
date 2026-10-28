@@ -139,6 +139,61 @@ select {
 
 .login-hint { color: var(--muted); font-size: 12px; text-align: center; margin: 12px 0 0; }
 
+.admin-page { display: flex; flex-direction: column; height: 100%; }
+
+.admin-main {
+  flex: 1;
+  overflow: auto;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.admin-tabs { max-width: 320px; margin-bottom: 16px; }
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.doc-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: #f9fafb;
+  color: var(--muted);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-table td { padding: 10px 12px; border-bottom: 1px solid #f1f2f4; vertical-align: top; }
+
+.doc-table tr.deleted td { color: var(--muted); background: #fafafa; }
+
+.doc-table .path {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.doc-table .muted { color: var(--muted); text-align: center; padding: 24px; }
+
+.doc-table button { padding: 5px 12px; font-size: 12px; }
+
+.doc-table button.danger {
+  background: #fff;
+  color: var(--danger);
+  border: 1px solid #fecaca;
+}
+
+.doc-table button.danger:hover { background: #fef2f2; }
+
 .shell {
   flex: 1;
   display: flex;

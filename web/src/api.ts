@@ -212,3 +212,65 @@ export async function sendFeedback(opts: {
     }),
   });
 }
+
+export type AdminDoc = {
+  path: string;
+  content_hash: string;
+  chunk_count: number;
+  updated_at: string;
+  deleted_at?: string | null;
+  exists: boolean;
+  status: "active" | "deleted";
+};
+
+export type AdminAudit = {
+  id: number;
+  operator: string;
+  action: string;
+  target: string;
+  detail?: string;
+  created_at: string;
+};
+
+export async function fetchTenants(): Promise<string[]> {
+  try {
+    const res = await fetch("/health");
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.tenants) ? data.tenants : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchAdminDocs(tenant: string): Promise<AdminDoc[]> {
+  const res = await fetch(`/admin/docs?tenant=${encodeURIComponent(tenant)}`, { headers: headers() });
+  if (!res.ok) throw new Error(await failMessage(res));
+  const data = await res.json();
+  return Array.isArray(data.items) ? data.items : [];
+}
+
+export async function fetchAudit(tenant: string): Promise<AdminAudit[]> {
+  const res = await fetch(`/admin/audit?tenant=${encodeURIComponent(tenant)}`, { headers: headers() });
+  if (!res.ok) throw new Error(await failMessage(res));
+  const data = await res.json();
+  return Array.isArray(data.items) ? data.items : [];
+}
+
+export async function deleteDoc(tenant: string, source: string): Promise<void> {
+  const res = await fetch("/admin/docs/delete", {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ tenant, source }),
+  });
+  if (!res.ok) throw new Error(await failMessage(res));
+}
+
+export async function restoreDoc(tenant: string, source: string): Promise<void> {
+  const res = await fetch("/admin/docs/restore", {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ tenant, source }),
+  });
+  if (!res.ok) throw new Error(await failMessage(res));
+}

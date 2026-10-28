@@ -262,6 +262,51 @@ class VectorStoreService:
 
         return stats
 
+    def ingest_file(
+        self,
+        path: str,
+        *,
+        corpus: str,
+        scope: str,
+        user_id: int | None = None,
+        force: bool = True,
+    ) -> dict[str, Any]:
+        """入库单个文件（恢复软删除用）；返回 {ingested, chunks, errors}。"""
+        stats = {"ingested": 0, "chunks": 0, "errors": 0}
+        try:
+            rel = os.path.relpath(path, get_abs_path(".")).replace("\\", "/")
+            chash = file_content_hash(path)
+            old = get_kb_file_hash(scope, rel)
+            if not force and old == chash:
+                return stats
+
+            documents = self._load_file_documents(path)
+            if not documents:
+                logger.warning(f"[加载知识库]{path} 无有效文本，跳过")
+                return stats
+            for d in documents:
+                d.metadata = dict(d.metadata or {})
+                d.metadata["corpus"] = corpus
+                d.metadata["source_path"] = rel
+
+            if old:
+                self.delete_by_source(rel)
+
+            split_docs = self._split_documents(documents, path)
+            if not split_docs:
+                return stats
+            n = self.add_split_documents(split_docs, source_path=rel)
+            upsert_kb_file(
+                scope=scope, path=rel, content_hash=chash, chunk_count=n, user_id=user_id
+            )
+            stats["ingested"] = 1
+            stats["chunks"] = n
+            logger.info(f"[加载知识库]{path} 加载成功 chunks={n}")
+        except Exception as e:
+            stats["errors"] = 1
+            logger.error(f"[加载知识库]{path} 失败：{e}", exc_info=True)
+        return stats
+
     def load_document(self) -> dict[str, Any]:
         """兼容旧接口：加载示例库 data/sample → sample collection。"""
         scope = "sample"

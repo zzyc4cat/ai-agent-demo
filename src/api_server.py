@@ -28,7 +28,7 @@ from agent.tools.agent_tools import set_current_user_id
 from agent.tools.middleware import SKILL_WHITELIST
 from rag.rag_service import RagSummarizeService
 from rag.tenant import load_tenant, list_tenants
-from services import auth_service, kb_store, user_service
+from services import admin_service, auth_service, kb_store, user_service
 from services.storage import ensure_db, get_conn
 from utils.logger_handler import log_event
 
@@ -630,3 +630,61 @@ def admin_delete_conversation(
     if not kb_store.delete_conversation(conversation_id):
         raise HTTPException(status_code=404, detail="会话不存在")
     return {"ok": True}
+
+
+class DocAction(BaseModel):
+    tenant: str = "demo"
+    source: str = Field(..., min_length=1)
+
+
+@app.get("/admin/docs")
+def admin_docs(
+    tenant: str = "demo",
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """租户文档列表（含软删除状态）。"""
+    try:
+        load_tenant(tenant)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant}") from e
+    return {"tenant": tenant, "items": admin_service.list_docs(tenant)}
+
+
+@app.post("/admin/docs/delete")
+def admin_delete_doc(
+    body: DocAction,
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """软删除文档：移出检索，保留原文件，可恢复。"""
+    try:
+        load_tenant(body.tenant)
+        return admin_service.delete_doc(body.tenant, body.source, admin["username"])
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+
+
+@app.post("/admin/docs/restore")
+def admin_restore_doc(
+    body: DocAction,
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """恢复被软删除的文档（重新入库）。"""
+    try:
+        load_tenant(body.tenant)
+        return admin_service.restore_doc(body.tenant, body.source, admin["username"])
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.get("/admin/audit")
+def admin_audit(
+    tenant: str = "demo",
+    limit: int = 100,
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """文档操作审计日志。"""
+    return {"tenant": tenant, "items": admin_service.list_audit(tenant, min(max(limit, 1), 500))}

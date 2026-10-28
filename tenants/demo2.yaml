@@ -1,6 +1,7 @@
 id: demo2
 name: 第二租户（隔离测试）
 collection: agent_tenant_demo2
+scope: tenant:demo2
 corpus: data/tenants/demo2
 welcome: "这是第二个知识库，与 demo 完全隔离。"
 model: ""

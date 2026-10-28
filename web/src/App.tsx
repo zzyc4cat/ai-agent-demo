@@ -6,11 +6,18 @@ import {
   apiRegister,
   askStream,
   deleteConversation,
+  deleteDoc,
+  fetchAdminDocs,
+  fetchAudit,
   fetchConversation,
   fetchConversations,
+  fetchTenants,
   hasToken,
   patchConversation,
+  restoreDoc,
   sendFeedback,
+  type AdminAudit,
+  type AdminDoc,
   type Citation,
   type ConvSummary,
   type User,
@@ -144,6 +151,7 @@ function ChatApp({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [notice, setNotice] = useState("");
   const [convId, setConvId] = useState<string | null>(null);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [view, setView] = useState<"chat" | "admin">("chat");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   function refreshConvs() {
@@ -317,11 +325,20 @@ function ChatApp({ user, onLogout }: { user: User; onLogout: () => void }) {
     }
   }
 
+  if (view === "admin") {
+    return <AdminPage onBack={() => setView("chat")} />;
+  }
+
   return (
     <div className="app">
       <header>
         <div className="brand">设备知识库问答</div>
         <div className="controls">
+          {user.role === "admin" && (
+            <button className="ghost" onClick={() => setView("admin")}>
+              管理
+            </button>
+          )}
           <span className="who">
             {user.username}
             {user.role === "admin" && <span className="role">管理员</span>}
@@ -331,7 +348,6 @@ function ChatApp({ user, onLogout }: { user: User; onLogout: () => void }) {
           </button>
         </div>
       </header>
-
       {error && <div className="banner">{error}</div>}
 
       <div className="shell">
@@ -461,6 +477,174 @@ function ChatApp({ user, onLogout }: { user: User; onLogout: () => void }) {
           </footer>
         </div>
       </div>
+    </div>
+  );
+}
+
+function AdminPage({ onBack }: { onBack: () => void }) {
+  const [tenants, setTenants] = useState<string[]>(["demo"]);
+  const [tenant, setTenant] = useState("demo");
+  const [docs, setDocs] = useState<AdminDoc[]>([]);
+  const [audit, setAudit] = useState<AdminAudit[]>([]);
+  const [tab, setTab] = useState<"docs" | "audit">("docs");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState("");
+
+  async function load(t = tenant) {
+    try {
+      const [d, a] = await Promise.all([fetchAdminDocs(t), fetchAudit(t)]);
+      setDocs(d);
+      setAudit(a);
+      setError("");
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  useEffect(() => {
+    fetchTenants().then((list) => {
+      if (list.length) setTenants(list);
+    });
+  }, []);
+
+  useEffect(() => {
+    load(tenant);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenant]);
+
+  async function onDelete(d: AdminDoc) {
+    if (!window.confirm(`软删除「${d.path}」？\n将从检索中移除，原文件保留，可在下方列表恢复。`)) return;
+    setBusy(d.path);
+    try {
+      await deleteDoc(tenant, d.path);
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function onRestore(d: AdminDoc) {
+    setBusy(d.path);
+    try {
+      await restoreDoc(tenant, d.path);
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  return (
+    <div className="admin-page">
+      <header>
+        <div className="brand">知识库管理</div>
+        <div className="controls">
+          <select value={tenant} onChange={(e) => setTenant(e.target.value)}>
+            {tenants.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+          <button className="ghost" onClick={onBack}>
+            返回对话
+          </button>
+        </div>
+      </header>
+
+      {error && <div className="banner">{error}</div>}
+
+      <main className="admin-main">
+        <div className="tabs admin-tabs">
+          <button className={tab === "docs" ? "on" : ""} onClick={() => setTab("docs")}>
+            文档（{docs.length}）
+          </button>
+          <button className={tab === "audit" ? "on" : ""} onClick={() => setTab("audit")}>
+            审计日志
+          </button>
+        </div>
+
+        {tab === "docs" ? (
+          <table className="doc-table">
+            <thead>
+              <tr>
+                <th>文件</th>
+                <th>块数</th>
+                <th>状态</th>
+                <th>更新时间</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {docs.map((d) => (
+                <tr key={d.path} className={d.status === "deleted" ? "deleted" : ""}>
+                  <td className="path" title={d.path}>
+                    {d.path}
+                  </td>
+                  <td>{d.chunk_count}</td>
+                  <td>{d.status === "active" ? "正常" : "已删除"}</td>
+                  <td>{fmtTime(d.updated_at)}</td>
+                  <td>
+                    {d.status === "active" ? (
+                      <button className="danger" disabled={busy === d.path} onClick={() => onDelete(d)}>
+                        删除
+                      </button>
+                    ) : (
+                      <button disabled={busy === d.path || !d.exists} onClick={() => onRestore(d)}>
+                        恢复
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {docs.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="muted">
+                    暂无文档
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        ) : (
+          <table className="doc-table">
+            <thead>
+              <tr>
+                <th>时间</th>
+                <th>操作人</th>
+                <th>动作</th>
+                <th>对象</th>
+                <th>说明</th>
+              </tr>
+            </thead>
+            <tbody>
+              {audit.map((a) => (
+                <tr key={a.id}>
+                  <td>{fmtTime(a.created_at)}</td>
+                  <td>{a.operator}</td>
+                  <td>
+                    {a.action === "delete_doc" ? "删除" : a.action === "restore_doc" ? "恢复" : a.action}
+                  </td>
+                  <td className="path" title={a.target}>
+                    {a.target}
+                  </td>
+                  <td>{a.detail}</td>
+                </tr>
+              ))}
+              {audit.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="muted">
+                    暂无记录
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </main>
     </div>
   );
 }

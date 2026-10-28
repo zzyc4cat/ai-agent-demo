@@ -1,6 +1,7 @@
 id: demo
 name: 示例设备知识库
 collection: agent_sample
+scope: sample
 corpus: data/tenants/demo
 welcome: "问一个设备问题，例如：X1 系列热床最高允许温度是多少？"
 model: ""          # 留空表示用全局 Auto

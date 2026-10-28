@@ -39,6 +39,9 @@ def ensure_kb_tables() -> None:
             );
             """
         )
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(kb_files)")}
+        if "deleted_at" not in cols:
+            conn.execute("ALTER TABLE kb_files ADD COLUMN deleted_at TEXT")
         conn.commit()
 
 

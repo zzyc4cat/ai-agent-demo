@@ -1,4 +1,4 @@
-﻿"""
+"""
 语料文件工具：MD5、按后缀递归列举、用 LangChain Loader 读成 Document。
 
 供 VectorStoreService 入库使用。MD5 为遗留辅助；主路径增量去重用 content_hash。
@@ -73,3 +73,24 @@ def txt_loader(filepath: str) -> list[Document]:
 def md_loader(filepath: str) -> list[Document]:
     """Markdown 与 txt 共用 TextLoader（切分阶段再用 MarkdownHeaderTextSplitter）。"""
     return TextLoader(filepath, encoding="utf-8").load()
+
+
+def docx_loader(filepath: str) -> list[Document]:
+    """加载 Word 文档：段落 + 表格按行拼接为纯文本。"""
+    from docx import Document as DocxDocument
+
+    doc = DocxDocument(filepath)
+    parts: list[str] = []
+    for p in doc.paragraphs:
+        text = (p.text or "").strip()
+        if text:
+            parts.append(text)
+    for table in doc.tables:
+        for row in table.rows:
+            cells = [c.text.strip() for c in row.cells if (c.text or "").strip()]
+            if cells:
+                parts.append(" | ".join(cells))
+    text = "\n\n".join(parts)
+    if not text.strip():
+        return []
+    return [Document(page_content=text, metadata={"source": filepath})]

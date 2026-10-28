@@ -64,8 +64,9 @@
 - [x] 管理员角色与接口权限（普通用户访问 admin 返回 403）
 - [x] 账号测试 `tests/test_auth.py`（3 条，通过）
 - [x] P2 管理页：文档列表、软删除/恢复、审计日志
-- [x] P3 录入：文件上传（md/txt/pdf）、URL 导入（Node + Edge 渲染）、异步入库 + 任务轮询
-- [ ] Word（.docx）入库：当前 Loader 只支持 txt/pdf/md，需补 docx 解析
+- [x] P3 录入：文件上传（md/txt/pdf/docx）、URL 导入（Node + Edge 渲染）、异步入库 + 任务轮询
+- [x] Word（.docx）入库：python-docx 解析段落与表格
+- [x] 软删除 30 天后自动彻底删除（含原文件），审计页支持恢复
 
 ### M4 可面试（W6）
 - [ ] 内测 10 人 × 1 周，收集 ≥20 条反馈

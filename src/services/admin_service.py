@@ -42,10 +42,42 @@ def _audit(
         pass
 
 
+def _purge_expired(tenant_id: str) -> int:
+    """彻底删除软删除超过 30 天的文档（含原文件）。"""
+    ensure_kb_tables()
+    scope = scope_for(tenant_id)
+    with get_conn() as conn:
+        rows = conn.execute(
+            """SELECT path FROM kb_files
+               WHERE scope = ? AND deleted_at IS NOT NULL
+                 AND deleted_at <= datetime('now', ?)""",
+            (scope, f"-{PURGE_DAYS} days"),
+        ).fetchall()
+    if not rows:
+        return 0
+    cfg = load_tenant(tenant_id)
+    store = VectorStoreService(str(cfg["collection"]))
+    for r in rows:
+        path = r["path"]
+        store.delete_by_source(path)
+        abs_path = get_abs_path(path)
+        if os.path.isfile(abs_path):
+            try:
+                os.remove(abs_path)
+            except OSError:
+                pass
+        with get_conn() as conn:
+            conn.execute("DELETE FROM kb_files WHERE scope = ? AND path = ?", (scope, path))
+        _audit(tenant_id, "system", "purge_doc", path, f"超过 {PURGE_DAYS} 天，彻底删除")
+    bump_kb_version(scope)
+    return len(rows)
+
+
 def list_docs(tenant_id: str) -> list[dict[str, Any]]:
-    """列出某租户的文档（含已软删除）。"""
+    """列出某租户的文档（含已软删除）；顺带清理过期的软删除。"""
     ensure_db()
     ensure_kb_tables()
+    _purge_expired(tenant_id)
     scope = scope_for(tenant_id)
     with get_conn() as conn:
         rows = conn.execute(
@@ -143,7 +175,8 @@ def list_audit(tenant_id: str, limit: int = 100) -> list[dict[str, Any]]:
 NODE_BIN = os.getenv("NODE_BIN") or shutil.which("node") or "node"
 CONVERTER = Path(__file__).resolve().parents[2] / "tools" / "wiki2md" / "convert.mjs"
 UPLOAD_LIMIT = 20 * 1024 * 1024
-ALLOWED_SUFFIX = (".md", ".markdown", ".txt", ".pdf")
+ALLOWED_SUFFIX = (".md", ".markdown", ".txt", ".pdf", ".docx")
+PURGE_DAYS = 30
 
 
 def _safe_name(name: str) -> str:

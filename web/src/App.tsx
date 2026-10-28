@@ -589,6 +589,20 @@ function AdminPage({ onBack }: { onBack: () => void }) {
     }
   }
 
+  async function onRestorePath(source: string) {
+    setBusy(source);
+    try {
+      await restoreDoc(tenant, source);
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  const docMap = new Map(docs.map((d) => [d.path, d]));
+
   return (
     <div className="admin-page">
       <header>
@@ -622,7 +636,7 @@ function AdminPage({ onBack }: { onBack: () => void }) {
         <div className="admin-actions">
           <label className="upload-btn">
             上传文件
-            <input type="file" accept=".md,.markdown,.txt,.pdf" onChange={onUpload} />
+            <input type="file" accept=".md,.markdown,.txt,.pdf,.docx" onChange={onUpload} />
           </label>
           <input
             className="url-input"
@@ -686,25 +700,52 @@ function AdminPage({ onBack }: { onBack: () => void }) {
                 <th>动作</th>
                 <th>对象</th>
                 <th>说明</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
-              {audit.map((a) => (
-                <tr key={a.id}>
-                  <td>{fmtTime(a.created_at)}</td>
-                  <td>{a.operator}</td>
-                  <td>
-                    {a.action === "delete_doc" ? "删除" : a.action === "restore_doc" ? "恢复" : a.action}
-                  </td>
-                  <td className="path" title={a.target}>
-                    {a.target}
-                  </td>
-                  <td>{a.detail}</td>
-                </tr>
-              ))}
+              {audit.map((a) => {
+                const doc = docMap.get(a.target);
+                return (
+                  <tr key={a.id}>
+                    <td>{fmtTime(a.created_at)}</td>
+                    <td>{a.operator}</td>
+                    <td>
+                      {a.action === "delete_doc"
+                        ? "删除"
+                        : a.action === "restore_doc"
+                          ? "恢复"
+                          : a.action === "purge_doc"
+                            ? "彻底删除"
+                            : a.action}
+                    </td>
+                    <td className="path" title={a.target}>
+                      {a.target}
+                    </td>
+                    <td>{a.detail}</td>
+                    <td>
+                      {a.action === "delete_doc" ? (
+                        doc?.status === "deleted" ? (
+                          <button disabled={busy === a.target} onClick={() => onRestorePath(a.target)}>
+                            恢复
+                          </button>
+                        ) : doc ? (
+                          "已恢复"
+                        ) : (
+                          "已彻底删除"
+                        )
+                      ) : a.action === "purge_doc" ? (
+                        "已彻底删除"
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
               {audit.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="muted">
+                  <td colSpan={6} className="muted">
                     暂无记录
                   </td>
                 </tr>

@@ -21,7 +21,14 @@ from rag.kb_meta import bump_kb_version, get_kb_file_hash, upsert_kb_file
 from rag.query_cache import get_query_cache
 from rag.utils_rag import file_content_hash, get_runtime, merged_chunk_config, stable_chunk_id
 from utils.config_handler import chroma_config
-from utils.file_handler import get_file_md5_hex, listdir_with_allowed_type, md_loader, pdf_loader, txt_loader
+from utils.file_handler import (
+    docx_loader,
+    get_file_md5_hex,
+    listdir_with_allowed_type,
+    md_loader,
+    pdf_loader,
+    txt_loader,
+)
 from utils.logger_handler import logger
 from utils.path_tool import get_abs_path
 
@@ -139,6 +146,8 @@ class VectorStoreService:
         lower = path.lower()
         if lower.endswith(".txt"):
             return txt_loader(path)
+        if lower.endswith(".docx"):
+            return docx_loader(path)
         if lower.endswith(".pdf"):
             return pdf_loader(path)
         if lower.endswith(".md") or lower.endswith(".markdown"):

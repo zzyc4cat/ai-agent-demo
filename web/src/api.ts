@@ -5,10 +5,10 @@ export type Citation = {
 };
 
 export type StreamHandlers = {
-  onMeta?: (d: { request_id: string; tenant: string }) => void;
+  onMeta?: (d: { request_id: string; tenant: string; conversation_id: string }) => void;
   onCitations?: (c: Citation[]) => void;
   onToken?: (t: string) => void;
-  onDone?: (d: { request_id: string; refused: boolean; latency_ms: number }) => void;
+  onDone?: (d: { request_id: string; conversation_id: string; refused: boolean; latency_ms: number }) => void;
   onError?: (msg: string) => void;
 };
 
@@ -24,7 +24,7 @@ export async function fetchTenants(): Promise<string[]> {
 }
 
 export async function askStream(
-  opts: { question: string; apiKey: string; tenant: string },
+  opts: { question: string; apiKey: string; tenant: string; conversationId?: string | null },
   h: StreamHandlers,
 ): Promise<void> {
   const res = await fetch("/kb/stream", {
@@ -34,7 +34,7 @@ export async function askStream(
       "X-API-Key": opts.apiKey,
       "X-Tenant": opts.tenant,
     },
-    body: JSON.stringify({ question: opts.question }),
+    body: JSON.stringify({ question: opts.question, conversation_id: opts.conversationId ?? null }),
   });
 
   if (!res.ok || !res.body) {

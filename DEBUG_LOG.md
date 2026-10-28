@@ -2509,3 +2509,39 @@
 
 ### [2026-10-28 15:38:51] stage=model.select req=- user=- model=qwen3_8_flash
 - mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:39:47] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 系列热床最高允许温度是多少？
+
+### [2026-10-28 15:39:47] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:39:58] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 用什么冷却液
+
+### [2026-10-28 15:39:58] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:40:08] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=Z9 用什么冷却液
+
+### [2026-10-28 15:40:09] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:40:33] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 用什么冷却液
+
+### [2026-10-28 15:40:33] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:42:02] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 系列热床最高允许温度是多少？
+
+### [2026-10-28 15:42:03] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 15:42:06] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=P1 系列热床最高许用温度是多少？
+
+### [2026-10-28 15:42:06] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash

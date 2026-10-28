@@ -57,8 +57,10 @@
 - [x] 反馈按租户落库（`feedback` 表 + `POST /feedback`）
 - [x] 对外 React 对话页（Vite + TS，SSE 流式、引用卡片、点赞点踩、租户选择）
 - [x] `POST /kb/stream` SSE 接口（meta → citations → token* → done）
-- [ ] 会话历史按租户落库
-- [ ] 后台：文档管理、badcase、租户配置
+- [x] 会话历史按租户落库（`kb_conversations` / `kb_messages`）
+- [x] 管理接口：`GET /admin/conversations`、`GET /admin/conversations/{id}`
+- [x] 前端「新对话」按钮，会话 id 贯穿多轮
+- [ ] 后台页面：文档管理、badcase、租户配置（Streamlit）
 
 ### M4 可面试（W6）
 - [ ] 内测 10 人 × 1 周，收集 ≥20 条反馈

@@ -28,7 +28,7 @@ from agent.tools.agent_tools import set_current_user_id
 from agent.tools.middleware import SKILL_WHITELIST
 from rag.rag_service import RagSummarizeService
 from rag.tenant import load_tenant, list_tenants
-from services import user_service
+from services import kb_store, user_service
 from services.storage import ensure_db, get_conn
 from utils.logger_handler import log_event
 
@@ -262,6 +262,7 @@ def rag_summarize(
 
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=1, max_length=2000)
+    conversation_id: str | None = Field(default=None, max_length=64)
 
 
 class Citation(BaseModel):
@@ -273,6 +274,7 @@ class Citation(BaseModel):
 class AskResponse(BaseModel):
     request_id: str
     tenant: str
+    conversation_id: str
     answer: str
     citations: list[Citation]
     latency_ms: int
@@ -297,6 +299,14 @@ def kb_ask(
         raise HTTPException(status_code=404, detail=f"租户不存在: {tenant_id}") from e
     question = body.question.strip()
     rid = uuid.uuid4().hex[:12]
+    conversation_id = kb_store.ensure_conversation(body.conversation_id, tenant_id, question)
+    kb_store.add_message(
+        message_id=f"{rid}-u",
+        conversation_id=conversation_id,
+        tenant_id=tenant_id,
+        role="user",
+        content=question,
+    )
     started = time.perf_counter()
     svc = _get_kb(tenant_id)
     docs = svc.retrieve_docs(question)
@@ -318,10 +328,21 @@ def kb_ask(
         for d in docs[:5]
     ]
     refused = str(answer).strip().startswith("不知道")
+    kb_store.add_message(
+        message_id=rid,
+        conversation_id=conversation_id,
+        tenant_id=tenant_id,
+        role="assistant",
+        content=str(answer),
+        citations=[c.model_dump() for c in citations],
+        latency_ms=latency,
+        refused=refused,
+    )
     log_event("api.kb", request_id=rid, tenant=tenant_id, ms=latency, docs=len(docs), refused=refused)
     return AskResponse(
         request_id=rid,
         tenant=tenant_id,
+        conversation_id=conversation_id,
         answer=str(answer),
         citations=citations,
         latency_ms=latency,
@@ -382,6 +403,14 @@ def kb_stream(
 
     question = body.question.strip()
     rid = uuid.uuid4().hex[:12]
+    conversation_id = kb_store.ensure_conversation(body.conversation_id, tenant_id, question)
+    kb_store.add_message(
+        message_id=f"{rid}-u",
+        conversation_id=conversation_id,
+        tenant_id=tenant_id,
+        role="user",
+        content=question,
+    )
     svc = _get_kb(tenant_id)
     docs = svc.retrieve_docs(question)
     citations = [
@@ -399,11 +428,27 @@ def kb_stream(
 
     def generate():
         started = time.perf_counter()
-        yield _sse("meta", {"request_id": rid, "tenant": tenant_id})
+        yield _sse(
+            "meta",
+            {"request_id": rid, "tenant": tenant_id, "conversation_id": conversation_id},
+        )
         yield _sse("citations", {"citations": citations})
         if not docs:
+            kb_store.add_message(
+                message_id=rid,
+                conversation_id=conversation_id,
+                tenant_id=tenant_id,
+                role="assistant",
+                content="不知道",
+                citations=citations,
+                latency_ms=0,
+                refused=True,
+            )
             yield _sse("token", {"text": "不知道"})
-            yield _sse("done", {"request_id": rid, "refused": True, "latency_ms": 0})
+            yield _sse(
+                "done",
+                {"request_id": rid, "conversation_id": conversation_id, "refused": True, "latency_ms": 0},
+            )
             return
         parts: list[str] = []
         try:
@@ -418,12 +463,24 @@ def kb_stream(
             return
         full = "".join(parts)
         latency = int((time.perf_counter() - started) * 1000)
+        refused = full.strip().startswith("不知道")
+        kb_store.add_message(
+            message_id=rid,
+            conversation_id=conversation_id,
+            tenant_id=tenant_id,
+            role="assistant",
+            content=full,
+            citations=citations,
+            latency_ms=latency,
+            refused=refused,
+        )
         log_event("api.kb_stream", request_id=rid, tenant=tenant_id, ms=latency, docs=len(docs))
         yield _sse(
             "done",
             {
                 "request_id": rid,
-                "refused": full.strip().startswith("不知道"),
+                "conversation_id": conversation_id,
+                "refused": refused,
                 "latency_ms": latency,
             },
         )
@@ -433,3 +490,30 @@ def kb_stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@app.get("/admin/conversations")
+def admin_conversations(
+    tenant: str = "demo",
+    limit: int = 50,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    """列出某租户的最近会话（后台用）。"""
+    require_api_key(authorization, x_api_key)
+    try:
+        load_tenant(tenant)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant}") from e
+    return {"tenant": tenant, "items": kb_store.list_conversations(tenant, min(max(limit, 1), 200))}
+
+
+@app.get("/admin/conversations/{conversation_id}")
+def admin_conversation(
+    conversation_id: str,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    """读取某会话的消息明细（面试演示 badcase 用）。"""
+    require_api_key(authorization, x_api_key)
+    return {"id": conversation_id, "messages": kb_store.get_messages(conversation_id)}

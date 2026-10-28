@@ -22,6 +22,7 @@ export default function App() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [convId, setConvId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,8 +54,16 @@ export default function App() {
   function switchTenant(next: string) {
     setTenant(next);
     setMessages([]);
+    setConvId(null);
     setError("");
     setNotice(`已切换到知识库：${next}`);
+  }
+
+  function newChat() {
+    setMessages([]);
+    setConvId(null);
+    setError("");
+    setNotice("已开始新对话");
   }
 
   async function send() {
@@ -76,8 +85,9 @@ export default function App() {
     setSending(true);
     try {
       await askStream(
-        { question: q, apiKey, tenant },
+        { question: q, apiKey, tenant, conversationId: convId },
         {
+          onMeta: (d) => setConvId(d.conversation_id),
           onCitations: (citations) =>
             setMessages((m) => m.map((x) => (x.id === aid ? { ...x, citations } : x))),
           onToken: (t) =>
@@ -131,6 +141,9 @@ export default function App() {
               </option>
             ))}
           </select>
+          <button className="ghost" onClick={newChat}>
+            新对话
+          </button>
           <button className="ghost" onClick={() => setShowKey((v) => !v)}>
             {apiKey ? "密钥已设置" : "填密钥"}
           </button>

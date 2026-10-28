@@ -81,6 +81,26 @@ CREATE TABLE IF NOT EXISTS feedback (
     reason TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+CREATE TABLE IF NOT EXISTS kb_conversations (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL,
+    title TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS kb_messages (
+    id TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL,
+    tenant_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    citations_json TEXT,
+    latency_ms INTEGER,
+    refused INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (conversation_id) REFERENCES kb_conversations(id)
+);
 """
 
 

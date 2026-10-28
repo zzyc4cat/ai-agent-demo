@@ -517,3 +517,40 @@ def admin_conversation(
     """读取某会话的消息明细（面试演示 badcase 用）。"""
     require_api_key(authorization, x_api_key)
     return {"id": conversation_id, "messages": kb_store.get_messages(conversation_id)}
+
+
+class ConversationPatch(BaseModel):
+    title: str | None = Field(default=None, max_length=60)
+    pinned: bool | None = None
+
+
+@app.patch("/admin/conversations/{conversation_id}")
+def admin_patch_conversation(
+    conversation_id: str,
+    body: ConversationPatch,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    """重命名或置顶/取消置顶会话。"""
+    require_api_key(authorization, x_api_key)
+    if body.title is None and body.pinned is None:
+        raise HTTPException(status_code=400, detail="title 与 pinned 至少提供一个")
+    ok = kb_store.update_conversation(
+        conversation_id, title=body.title, pinned=body.pinned
+    )
+    if not ok:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return {"ok": True}
+
+
+@app.delete("/admin/conversations/{conversation_id}")
+def admin_delete_conversation(
+    conversation_id: str,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> dict[str, Any]:
+    """删除会话及其消息。"""
+    require_api_key(authorization, x_api_key)
+    if not kb_store.delete_conversation(conversation_id):
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return {"ok": True}

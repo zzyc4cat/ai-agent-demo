@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS kb_conversations (
     id TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
     title TEXT,
+    pinned INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -110,6 +111,12 @@ def ensure_db() -> None:
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("PRAGMA foreign_keys=ON")
         conn.executescript(_SCHEMA)
+        # 轻量迁移：旧库补 pinned 列
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(kb_conversations)")}
+        if "pinned" not in cols:
+            conn.execute(
+                "ALTER TABLE kb_conversations ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0"
+            )
         conn.commit()
 
 

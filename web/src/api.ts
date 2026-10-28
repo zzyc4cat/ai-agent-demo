@@ -120,7 +120,29 @@ export type ConvSummary = {
   title: string;
   created_at: string;
   messages: number;
+  pinned?: number;
 };
+
+export async function patchConversation(
+  id: string,
+  payload: { title?: string; pinned?: boolean },
+  apiKey: string,
+): Promise<boolean> {
+  const res = await fetch(`/admin/conversations/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
+    body: JSON.stringify(payload),
+  });
+  return res.ok;
+}
+
+export async function deleteConversation(id: string, apiKey: string): Promise<boolean> {
+  const res = await fetch(`/admin/conversations/${id}`, {
+    method: "DELETE",
+    headers: { "X-API-Key": apiKey },
+  });
+  return res.ok;
+}
 
 export async function fetchConversations(
   tenant: string,

@@ -90,7 +90,8 @@ select {
 .conv-list { flex: 1; overflow-y: auto; }
 
 .conv {
-  padding: 10px 12px;
+  position: relative;
+  padding: 10px 34px 10px 12px;
   border-bottom: 1px solid #f1f2f4;
   cursor: pointer;
 }
@@ -104,6 +105,60 @@ select {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.conv .badge {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 4px;
+  font-size: 10px;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+}
+
+.conv .more {
+  position: absolute;
+  right: 6px;
+  top: 8px;
+  padding: 2px 6px;
+  background: transparent;
+  color: var(--muted);
+  border: 0;
+  opacity: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.conv:hover .more, .conv .more:focus { opacity: 1; }
+.conv .more:hover { background: #eef2ff; color: var(--text); }
+
+.menu {
+  position: absolute;
+  right: 8px;
+  top: 30px;
+  z-index: 20;
+  min-width: 120px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  background: #fff;
+  color: var(--text);
+  border: 0;
+  border-radius: 6px;
+  font-size: 13px;
+  text-align: left;
+}
+
+.menu button:hover { background: #f3f4f6; }
+.menu button.danger { color: var(--danger); }
 
 .conv .meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
 

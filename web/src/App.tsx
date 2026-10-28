@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import {
   askStream,
+  deleteConversation,
   fetchConversation,
   fetchConversations,
   fetchTenants,
+  patchConversation,
   sendFeedback,
   type Citation,
   type ConvSummary,
@@ -32,6 +34,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [convId, setConvId] = useState<string | null>(null);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   function refreshConvs(key = apiKey, t = tenant) {
@@ -86,6 +89,13 @@ export default function App() {
     else sessionStorage.removeItem("kb_conv");
   }, [convId]);
 
+  useEffect(() => {
+    if (!openMenu) return;
+    const close = () => setOpenMenu(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [openMenu]);
+
   function saveKey() {
     sessionStorage.setItem("kb_key", apiKey.trim());
     setApiKey(apiKey.trim());
@@ -115,6 +125,33 @@ export default function App() {
     setConvId(null);
     setError("");
     setNotice("已开始新对话");
+  }
+
+  async function renameConv(c: ConvSummary) {
+    setOpenMenu(null);
+    const v = window.prompt("重命名会话", c.title || "");
+    if (v === null) return;
+    const title = v.trim();
+    if (!title) return;
+    if (await patchConversation(c.id, { title }, apiKey)) refreshConvs();
+    else setError("重命名失败");
+  }
+
+  async function togglePin(c: ConvSummary) {
+    setOpenMenu(null);
+    if (await patchConversation(c.id, { pinned: !c.pinned }, apiKey)) refreshConvs();
+    else setError("操作失败");
+  }
+
+  async function removeConv(c: ConvSummary) {
+    setOpenMenu(null);
+    if (!window.confirm(`删除会话「${c.title}」？此操作不可恢复。`)) return;
+    if (!(await deleteConversation(c.id, apiKey))) {
+      setError("删除失败");
+      return;
+    }
+    if (convId === c.id) newChat();
+    refreshConvs();
   }
 
   async function openConv(id: string) {
@@ -263,10 +300,34 @@ export default function App() {
                 onClick={() => openConv(c.id)}
                 title={c.title}
               >
-                <div className="title">{c.title || "未命名对话"}</div>
+                <div className="title">
+                  {!!c.pinned && <span className="badge">置顶</span>}
+                  {c.title || "未命名对话"}
+                </div>
                 <div className="meta">
                   {c.messages} 条 · {c.created_at?.slice(5, 16)}
                 </div>
+                <button
+                  className="more"
+                  aria-label="会话操作"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenu(openMenu === c.id ? null : c.id);
+                  }}
+                >
+                  ⋯
+                </button>
+                {openMenu === c.id && (
+                  <div className="menu" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => renameConv(c)}>重命名</button>
+                    <button onClick={() => togglePin(c)}>
+                      {c.pinned ? "取消置顶" : "置顶"}
+                    </button>
+                    <button className="danger" onClick={() => removeConv(c)}>
+                      删除
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

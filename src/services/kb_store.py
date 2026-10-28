@@ -51,18 +51,51 @@ def add_message(
 
 
 def list_conversations(tenant_id: str, limit: int = 50) -> list[dict[str, Any]]:
-    """按租户列出最近会话。"""
+    """按租户列出会话：置顶优先，其次按创建时间倒序。"""
     with get_conn() as conn:
         rows = conn.execute(
-            """SELECT c.id, c.title, c.created_at,
+            """SELECT c.id, c.title, c.pinned, c.created_at,
                       (SELECT COUNT(*) FROM kb_messages m WHERE m.conversation_id = c.id) AS messages
                FROM kb_conversations c
                WHERE c.tenant_id = ?
-               ORDER BY c.created_at DESC
+               ORDER BY c.pinned DESC, c.created_at DESC
                LIMIT ?""",
             (tenant_id, limit),
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+def update_conversation(
+    conversation_id: str,
+    *,
+    title: str | None = None,
+    pinned: bool | None = None,
+) -> bool:
+    """重命名或置顶/取消置顶；返回是否命中。"""
+    sets: list[str] = []
+    args: list[Any] = []
+    if title is not None:
+        sets.append("title = ?")
+        args.append(title[:60])
+    if pinned is not None:
+        sets.append("pinned = ?")
+        args.append(1 if pinned else 0)
+    if not sets:
+        return False
+    args.append(conversation_id)
+    with get_conn() as conn:
+        cur = conn.execute(
+            f"UPDATE kb_conversations SET {', '.join(sets)} WHERE id = ?", args
+        )
+        return cur.rowcount > 0
+
+
+def delete_conversation(conversation_id: str) -> bool:
+    """删除会话及其消息；返回是否命中。"""
+    with get_conn() as conn:
+        conn.execute("DELETE FROM kb_messages WHERE conversation_id = ?", (conversation_id,))
+        cur = conn.execute("DELETE FROM kb_conversations WHERE id = ?", (conversation_id,))
+        return cur.rowcount > 0
 
 
 def get_messages(conversation_id: str) -> list[dict[str, Any]]:

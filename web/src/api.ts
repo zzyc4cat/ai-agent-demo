@@ -115,6 +115,29 @@ export type StoredMessage = {
   refused?: number | boolean;
 };
 
+export type ConvSummary = {
+  id: string;
+  title: string;
+  created_at: string;
+  messages: number;
+};
+
+export async function fetchConversations(
+  tenant: string,
+  apiKey: string,
+): Promise<ConvSummary[]> {
+  try {
+    const res = await fetch(`/admin/conversations?tenant=${encodeURIComponent(tenant)}`, {
+      headers: { "X-API-Key": apiKey },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.items) ? data.items : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchConversation(
   id: string,
   apiKey: string,

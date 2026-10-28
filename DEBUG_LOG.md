@@ -2569,3 +2569,15 @@
 
 ### [2026-10-28 16:00:00] stage=model.select req=- user=- model=qwen3_8_flash
 - mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 16:02:55] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 热床最高温度是多少？
+
+### [2026-10-28 16:02:55] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 16:02:59] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=P1 热床最高温度是多少？
+
+### [2026-10-28 16:02:59] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash

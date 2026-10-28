@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { askStream, fetchConversation, fetchTenants, sendFeedback, type Citation } from "./api";
+import {
+  askStream,
+  fetchConversation,
+  fetchConversations,
+  fetchTenants,
+  sendFeedback,
+  type Citation,
+  type ConvSummary,
+} from "./api";
 
 type Msg = {
   id: string;
@@ -18,12 +26,21 @@ export default function App() {
   const [tenants, setTenants] = useState<string[]>([]);
   const [tenant, setTenant] = useState("demo");
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [convs, setConvs] = useState<ConvSummary[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [convId, setConvId] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  function refreshConvs(key = apiKey, t = tenant) {
+    if (!key) {
+      setConvs([]);
+      return;
+    }
+    fetchConversations(t, key).then(setConvs);
+  }
 
   useEffect(() => {
     fetchTenants().then((list) => {
@@ -32,6 +49,11 @@ export default function App() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    refreshConvs(apiKey, tenant);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenant, apiKey]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -69,12 +91,14 @@ export default function App() {
     setApiKey(apiKey.trim());
     setShowKey(false);
     setError("");
+    refreshConvs(apiKey.trim(), tenant);
   }
 
   function clearKey() {
     sessionStorage.removeItem("kb_key");
     setApiKey("");
     setShowKey(true);
+    setConvs([]);
     setError("");
   }
 
@@ -91,6 +115,28 @@ export default function App() {
     setConvId(null);
     setError("");
     setNotice("已开始新对话");
+  }
+
+  async function openConv(id: string) {
+    if (!apiKey) return;
+    const rows = await fetchConversation(id, apiKey);
+    if (!rows.length) {
+      setError("读取会话失败");
+      return;
+    }
+    setConvId(id);
+    setNotice("");
+    setError("");
+    setMessages(
+      rows.map((r) => ({
+        id: r.id,
+        role: r.role,
+        text: r.content,
+        citations: r.citations,
+        latency: r.latency_ms ?? undefined,
+        refused: !!r.refused,
+      })),
+    );
   }
 
   async function send() {
@@ -119,14 +165,17 @@ export default function App() {
             setMessages((m) => m.map((x) => (x.id === aid ? { ...x, citations } : x))),
           onToken: (t) =>
             setMessages((m) => m.map((x) => (x.id === aid ? { ...x, text: x.text + t } : x))),
-          onDone: (d) =>
+          onDone: (d) => {
             setMessages((m) =>
               m.map((x) =>
                 x.id === aid
                   ? { ...x, id: d.request_id, pending: false, latency: d.latency_ms, refused: d.refused }
                   : x,
               ),
-            ),
+            );
+            setConvId(d.conversation_id);
+            refreshConvs();
+          },
           onError: (msg) => {
             setError(msg);
             setMessages((m) => m.map((x) => (x.id === aid ? { ...x, pending: false } : x)));
@@ -168,9 +217,6 @@ export default function App() {
               </option>
             ))}
           </select>
-          <button className="ghost" onClick={newChat}>
-            新对话
-          </button>
           <button className="ghost" onClick={() => setShowKey((v) => !v)}>
             {apiKey ? "密钥已设置" : "填密钥"}
           </button>
@@ -200,82 +246,109 @@ export default function App() {
 
       {error && <div className="banner">{error}</div>}
 
-      <main>
-        {notice && <div className="notice">{notice}</div>}
-        {messages.length === 0 && !notice && (
-          <div className="empty">
-            问一个设备问题，例如：X1 系列热床最高允许温度是多少？
+      <div className="shell">
+        <aside className="sidebar">
+          <div className="side-head">
+            <button className="new" onClick={newChat}>
+              + 新对话
+            </button>
           </div>
-        )}
-        {messages.map((m) =>
-          m.role === "user" ? (
-            <div key={m.id} className="msg user">
-              {m.text}
-            </div>
-          ) : (
-            <div key={m.id} className="msg bot">
-              <div className="head">
-                <span>{m.refused ? "未找到依据" : "回答"}</span>
-                <span>{m.pending ? "生成中…" : m.latency ? `${m.latency} ms` : ""}</span>
-              </div>
-              <div className="body">
-                {m.text || (m.pending ? "…" : "（空）")}
-                {m.pending && <span className="caret" />}
-              </div>
-              {!!m.citations?.length && (
-                <div className="cites">
-                  {m.citations.map((c, i) => (
-                    <div className="cite" key={`${c.source}-${i}`}>
-                      <b>
-                        {i + 1}. {c.source.split("/").pop()}
-                      </b>
-                      <div className="snip">{c.snippet.slice(0, 140)}…</div>
-                    </div>
-                  ))}
+          <div className="conv-list">
+            {!apiKey && <div className="side-empty">填密钥后显示历史</div>}
+            {apiKey && convs.length === 0 && <div className="side-empty">暂无历史对话</div>}
+            {convs.map((c) => (
+              <div
+                key={c.id}
+                className={"conv" + (c.id === convId ? " active" : "")}
+                onClick={() => openConv(c.id)}
+                title={c.title}
+              >
+                <div className="title">{c.title || "未命名对话"}</div>
+                <div className="meta">
+                  {c.messages} 条 · {c.created_at?.slice(5, 16)}
                 </div>
-              )}
-              {!m.pending && (
-                <div className="fb">
-                  <button
-                    className={m.feedback === "up" ? "on" : ""}
-                    onClick={() => feedback(m, "up")}
-                    aria-label="有帮助"
-                  >
-                    👍
-                  </button>
-                  <button
-                    className={m.feedback === "down" ? "on" : ""}
-                    onClick={() => feedback(m, "down")}
-                    aria-label="没帮助"
-                  >
-                    👎
-                  </button>
-                </div>
-              )}
-            </div>
-          ),
-        )}
-        <div ref={bottomRef} />
-      </main>
+              </div>
+            ))}
+          </div>
+        </aside>
 
-      <footer>
-        <div className="inner">
-          <input
-            value={input}
-            placeholder="输入问题，回车发送"
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send();
-              }
-            }}
-          />
-          <button onClick={send} disabled={sending}>
-            {sending ? "生成中" : "发送"}
-          </button>
+        <div className="chat">
+          <main>
+            {notice && <div className="notice">{notice}</div>}
+            {messages.length === 0 && !notice && (
+              <div className="empty">问一个设备问题，例如：X1 系列热床最高允许温度是多少？</div>
+            )}
+            {messages.map((m) =>
+              m.role === "user" ? (
+                <div key={m.id} className="msg user">
+                  {m.text}
+                </div>
+              ) : (
+                <div key={m.id} className="msg bot">
+                  <div className="head">
+                    <span>{m.refused ? "未找到依据" : "回答"}</span>
+                    <span>{m.pending ? "生成中…" : m.latency ? `${m.latency} ms` : ""}</span>
+                  </div>
+                  <div className="body">
+                    {m.text || (m.pending ? "…" : "（空）")}
+                    {m.pending && <span className="caret" />}
+                  </div>
+                  {!!m.citations?.length && (
+                    <div className="cites">
+                      {m.citations.map((c, i) => (
+                        <div className="cite" key={`${c.source}-${i}`}>
+                          <b>
+                            {i + 1}. {c.source.split("/").pop()}
+                          </b>
+                          <div className="snip">{c.snippet.slice(0, 140)}…</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!m.pending && (
+                    <div className="fb">
+                      <button
+                        className={m.feedback === "up" ? "on" : ""}
+                        onClick={() => feedback(m, "up")}
+                        aria-label="有帮助"
+                      >
+                        👍
+                      </button>
+                      <button
+                        className={m.feedback === "down" ? "on" : ""}
+                        onClick={() => feedback(m, "down")}
+                        aria-label="没帮助"
+                      >
+                        👎
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ),
+            )}
+            <div ref={bottomRef} />
+          </main>
+
+          <footer>
+            <div className="inner">
+              <input
+                value={input}
+                placeholder="输入问题，回车发送"
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+              />
+              <button onClick={send} disabled={sending}>
+                {sending ? "生成中" : "发送"}
+              </button>
+            </div>
+          </footer>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

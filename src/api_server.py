@@ -9,21 +9,30 @@ from __future__ import annotations
 
 import os
 import secrets
+import time
 import uuid
+from collections import deque
 from contextlib import asynccontextmanager
+from threading import Lock
 from typing import Any
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from agent.react_agent import ReactAgent
 from agent.tools.agent_tools import set_current_user_id
 from agent.tools.middleware import SKILL_WHITELIST
+from rag.rag_service import RagSummarizeService
 from services import user_service
 from services.storage import ensure_db
 from utils.logger_handler import log_event
 
 _agent: ReactAgent | None = None
+_kb: RagSummarizeService | None = None
+
+RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "10"))
+_rate_buckets: dict[str, deque[float]] = {}
+_rate_lock = Lock()
 
 
 @asynccontextmanager
@@ -34,6 +43,24 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="个人综合助手 API", version="0.2.0", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def trace_middleware(request: Request, call_next):
+    """为每个请求生成 trace id，并记录访问日志。"""
+    rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:12]
+    started = time.perf_counter()
+    response = await call_next(request)
+    elapsed = int((time.perf_counter() - started) * 1000)
+    response.headers["X-Request-ID"] = rid
+    log_event(
+        "api.access",
+        request_id=rid,
+        path=request.url.path,
+        status=response.status_code,
+        ms=elapsed,
+    )
+    return response
 
 
 class ChatRequest(BaseModel):
@@ -94,6 +121,37 @@ def _get_agent() -> ReactAgent:
     if _agent is None:
         _agent = ReactAgent(model_mode="auto")
     return _agent
+
+
+def _get_kb() -> RagSummarizeService:
+    """懒创建并缓存知识库问答服务。"""
+    global _kb
+    if _kb is None:
+        _kb = RagSummarizeService()
+    return _kb
+
+
+def _client_key(authorization: str | None, x_api_key: str | None, request: Request) -> str:
+    """限流键：优先 API Key，其次客户端 IP。"""
+    provided = _extract_api_key(authorization, x_api_key)
+    if provided:
+        return provided
+    return request.client.host if request.client else "unknown"
+
+
+def check_rate_limit(key: str) -> None:
+    """按分钟滑动窗口限流，超限返回 429。"""
+    now = time.time()
+    with _rate_lock:
+        bucket = _rate_buckets.setdefault(key, deque())
+        while bucket and now - bucket[0] > 60:
+            bucket.popleft()
+        if len(bucket) >= RATE_LIMIT_PER_MIN:
+            raise HTTPException(
+                status_code=429,
+                detail=f"请求过于频繁，限制 {RATE_LIMIT_PER_MIN} 次/分钟",
+            )
+        bucket.append(now)
 
 
 def _validate_skill(skill: str) -> str:
@@ -175,3 +233,64 @@ def rag_summarize(
         log_event("api.rag", level=40, status="error", error=str(e)[:500])
         raise HTTPException(status_code=500, detail="检索失败，请查看服务端日志") from e
     return {"query": q, "answer": text, "user_id": u["id"]}
+
+
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=1, max_length=2000)
+
+
+class Citation(BaseModel):
+    source: str
+    chunk_index: int | None = None
+    snippet: str
+
+
+class AskResponse(BaseModel):
+    request_id: str
+    answer: str
+    citations: list[Citation]
+    latency_ms: int
+    refused: bool
+
+
+@app.post("/kb/ask", response_model=AskResponse)
+def kb_ask(
+    body: AskRequest,
+    request: Request,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> AskResponse:
+    """知识库问答：返回答案与引用；按 API Key / IP 限流。"""
+    require_api_key(authorization, x_api_key)
+    check_rate_limit(_client_key(authorization, x_api_key, request))
+    question = body.question.strip()
+    rid = uuid.uuid4().hex[:12]
+    started = time.perf_counter()
+    svc = _get_kb()
+    docs = svc.retrieve_docs(question)
+    if docs:
+        parts = [
+            f"[参考资料{i}] 来源:{(d.metadata or {}).get('source_path', '')}\n{d.page_content}"
+            for i, d in enumerate(docs, start=1)
+        ]
+        answer = svc._chain().invoke({"input": question, "context": "\n\n".join(parts)})
+    else:
+        answer = "不知道"
+    latency = int((time.perf_counter() - started) * 1000)
+    citations = [
+        Citation(
+            source=str((d.metadata or {}).get("source_path", "")),
+            chunk_index=(d.metadata or {}).get("chunk_index"),
+            snippet=(d.page_content or "")[:200],
+        )
+        for d in docs[:5]
+    ]
+    refused = str(answer).strip().startswith("不知道")
+    log_event("api.kb", request_id=rid, ms=latency, docs=len(docs), refused=refused)
+    return AskResponse(
+        request_id=rid,
+        answer=str(answer),
+        citations=citations,
+        latency_ms=latency,
+        refused=refused,
+    )

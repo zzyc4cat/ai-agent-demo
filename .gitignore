@@ -48,3 +48,6 @@ tmp_*.md
 
 # local backups
 archive/backup/
+
+# tools binaries
+tools/*.exe

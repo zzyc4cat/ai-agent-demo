@@ -40,10 +40,14 @@
 ## 后续（按里程碑，不按日期）
 
 ### M2 上线（W3）
-- [ ] 公网部署（Docker + Nginx / Cloudflare Tunnel）
-- [ ] API Key 鉴权 + 限流 10 次/分钟
-- [ ] 结构化日志 + trace_id + 成本统计
-- [ ] `/health` 健康检查
+- [x] 本地公网暴露：Cloudflare Quick Tunnel（临时地址，重启会变；固定地址需命名隧道 + 域名）
+- [x] API Key 鉴权（`AGENT_API_KEY`，Bearer 或 X-API-Key）
+- [x] 限流 10 次/分钟（滑动窗口，按 Key/IP）
+- [x] 结构化日志 + trace_id（`api.access` / `api.kb`）
+- [ ] 成本统计（当前只记延迟与召回数，token 成本待补）
+- [x] `/health` 健康检查
+- [x] `/kb/ask` 知识库问答接口（返回答案 + 引用）
+- [x] 一键启动脚本 `start-api.ps1` / `start-tunnel.ps1`
 
 ### M3 交付（W4–W5）
 - [ ] `tenant_id` 全链路 + 3 条隔离测试

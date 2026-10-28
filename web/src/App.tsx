@@ -14,12 +14,14 @@ type Msg = {
 
 export default function App() {
   const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("kb_key") ?? "");
+  const [showKey, setShowKey] = useState(() => !sessionStorage.getItem("kb_key"));
   const [tenants, setTenants] = useState<string[]>([]);
   const [tenant, setTenant] = useState("demo");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,7 +39,22 @@ export default function App() {
   function saveKey() {
     sessionStorage.setItem("kb_key", apiKey.trim());
     setApiKey(apiKey.trim());
+    setShowKey(false);
     setError("");
+  }
+
+  function clearKey() {
+    sessionStorage.removeItem("kb_key");
+    setApiKey("");
+    setShowKey(true);
+    setError("");
+  }
+
+  function switchTenant(next: string) {
+    setTenant(next);
+    setMessages([]);
+    setError("");
+    setNotice(`已切换到知识库：${next}`);
   }
 
   async function send() {
@@ -48,6 +65,7 @@ export default function App() {
       return;
     }
     setError("");
+    setNotice("");
     setInput("");
     const aid = "pending";
     setMessages((m) => [
@@ -106,19 +124,22 @@ export default function App() {
       <header>
         <div className="brand">设备知识库问答</div>
         <div className="controls">
-          <select value={tenant} onChange={(e) => setTenant(e.target.value)}>
+          <select value={tenant} onChange={(e) => switchTenant(e.target.value)}>
             {(tenants.length ? tenants : [tenant]).map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
             ))}
           </select>
+          <button className="ghost" onClick={() => setShowKey((v) => !v)}>
+            {apiKey ? "密钥已设置" : "填密钥"}
+          </button>
         </div>
       </header>
 
-      {!apiKey && (
+      {showKey && (
         <div className="keybar">
-          <p>输入访问密钥（只保存在本标签页）</p>
+          <p>访问密钥（只保存在本标签页，可随时更换）</p>
           <div className="row">
             <input
               type="password"
@@ -128,6 +149,11 @@ export default function App() {
               onKeyDown={(e) => e.key === "Enter" && saveKey()}
             />
             <button onClick={saveKey}>保存</button>
+            {apiKey && (
+              <button className="ghost" onClick={clearKey}>
+                清除
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -135,7 +161,8 @@ export default function App() {
       {error && <div className="banner">{error}</div>}
 
       <main>
-        {messages.length === 0 && (
+        {notice && <div className="notice">{notice}</div>}
+        {messages.length === 0 && !notice && (
           <div className="empty">
             问一个设备问题，例如：X1 系列热床最高允许温度是多少？
           </div>

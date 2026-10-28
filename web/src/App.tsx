@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  apiLogin,
+  apiLogout,
+  apiMe,
+  apiRegister,
   askStream,
   deleteConversation,
   fetchConversation,
   fetchConversations,
-  fetchTenants,
+  hasToken,
   patchConversation,
   sendFeedback,
   type Citation,
   type ConvSummary,
+  type User,
 } from "./api";
 
 type Msg = {
@@ -36,10 +41,101 @@ function fmtTime(raw?: string): string {
 }
 
 export default function App() {
-  const [apiKey, setApiKey] = useState(() => sessionStorage.getItem("kb_key") ?? "");
-  const [showKey, setShowKey] = useState(() => !sessionStorage.getItem("kb_key"));
-  const [tenants, setTenants] = useState<string[]>([]);
-  const [tenant, setTenant] = useState("demo");
+  const [user, setUser] = useState<User | null>(null);
+  const [booting, setBooting] = useState(true);
+
+  useEffect(() => {
+    if (!hasToken()) {
+      setBooting(false);
+      return;
+    }
+    apiMe().then((u) => {
+      setUser(u);
+      setBooting(false);
+    });
+  }, []);
+
+  if (booting) return <div className="boot">加载中…</div>;
+  if (!user) return <Login onSuccess={setUser} />;
+  return <ChatApp user={user} onLogout={() => setUser(null)} />;
+}
+
+function Login({ onSuccess }: { onSuccess: (u: User) => void }) {
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit() {
+    if (busy) return;
+    setError("");
+    if (mode === "register" && password !== confirm) {
+      setError("两次密码不一致");
+      return;
+    }
+    setBusy(true);
+    try {
+      const u =
+        mode === "login"
+          ? await apiLogin(username.trim(), password)
+          : await apiRegister(username.trim(), password);
+      onSuccess(u);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="login-wrap">
+      <div className="login-card">
+        <h1>设备知识库问答</h1>
+        <div className="tabs">
+          <button className={mode === "login" ? "on" : ""} onClick={() => setMode("login")}>
+            登录
+          </button>
+          <button className={mode === "register" ? "on" : ""} onClick={() => setMode("register")}>
+            注册
+          </button>
+        </div>
+        <input
+          placeholder="用户名"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+        />
+        <input
+          type="password"
+          placeholder={mode === "register" ? "密码（至少 8 位）" : "密码"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete={mode === "login" ? "current-password" : "new-password"}
+        />
+        {mode === "register" && (
+          <input
+            type="password"
+            placeholder="确认密码"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            autoComplete="new-password"
+          />
+        )}
+        {error && <div className="login-error">{error}</div>}
+        <button className="login-submit" onClick={submit} disabled={busy}>
+          {busy ? "请稍候…" : mode === "login" ? "登录" : "注册并登录"}
+        </button>
+        <p className="login-hint">
+          {mode === "login" ? "没有账号？切换到注册" : "注册后默认加入公共知识库"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ChatApp({ user, onLogout }: { user: User; onLogout: () => void }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [convs, setConvs] = useState<ConvSummary[]>([]);
   const [input, setInput] = useState("");
@@ -50,26 +146,13 @@ export default function App() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  function refreshConvs(key = apiKey, t = tenant) {
-    if (!key) {
-      setConvs([]);
-      return;
-    }
-    fetchConversations(t, key).then(setConvs);
+  function refreshConvs() {
+    fetchConversations().then(setConvs);
   }
 
   useEffect(() => {
-    fetchTenants().then((list) => {
-      setTenants(list);
-      if (list.length && !list.includes(tenant)) setTenant(list[0]);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    refreshConvs();
   }, []);
-
-  useEffect(() => {
-    refreshConvs(apiKey, tenant);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenant, apiKey]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -78,9 +161,8 @@ export default function App() {
   // 刷新后恢复当前会话
   useEffect(() => {
     const saved = sessionStorage.getItem("kb_conv");
-    const key = sessionStorage.getItem("kb_key");
-    if (!saved || !key) return;
-    fetchConversation(saved, key).then((rows) => {
+    if (!saved) return;
+    fetchConversation(saved).then((rows) => {
       if (!rows.length) return;
       setConvId(saved);
       setMessages(
@@ -94,7 +176,6 @@ export default function App() {
         })),
       );
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -109,28 +190,9 @@ export default function App() {
     return () => document.removeEventListener("click", close);
   }, [openMenu]);
 
-  function saveKey() {
-    sessionStorage.setItem("kb_key", apiKey.trim());
-    setApiKey(apiKey.trim());
-    setShowKey(false);
-    setError("");
-    refreshConvs(apiKey.trim(), tenant);
-  }
-
-  function clearKey() {
-    sessionStorage.removeItem("kb_key");
-    setApiKey("");
-    setShowKey(true);
-    setConvs([]);
-    setError("");
-  }
-
-  function switchTenant(next: string) {
-    setTenant(next);
-    setMessages([]);
-    setConvId(null);
-    setError("");
-    setNotice(`已切换到知识库：${next}`);
+  async function logout() {
+    await apiLogout();
+    onLogout();
   }
 
   function newChat() {
@@ -140,36 +202,8 @@ export default function App() {
     setNotice("已开始新对话");
   }
 
-  async function renameConv(c: ConvSummary) {
-    setOpenMenu(null);
-    const v = window.prompt("重命名会话", c.title || "");
-    if (v === null) return;
-    const title = v.trim();
-    if (!title) return;
-    if (await patchConversation(c.id, { title }, apiKey)) refreshConvs();
-    else setError("重命名失败");
-  }
-
-  async function togglePin(c: ConvSummary) {
-    setOpenMenu(null);
-    if (await patchConversation(c.id, { pinned: !c.pinned }, apiKey)) refreshConvs();
-    else setError("操作失败");
-  }
-
-  async function removeConv(c: ConvSummary) {
-    setOpenMenu(null);
-    if (!window.confirm(`删除会话「${c.title}」？此操作不可恢复。`)) return;
-    if (!(await deleteConversation(c.id, apiKey))) {
-      setError("删除失败");
-      return;
-    }
-    if (convId === c.id) newChat();
-    refreshConvs();
-  }
-
   async function openConv(id: string) {
-    if (!apiKey) return;
-    const rows = await fetchConversation(id, apiKey);
+    const rows = await fetchConversation(id);
     if (!rows.length) {
       setError("读取会话失败");
       return;
@@ -189,13 +223,36 @@ export default function App() {
     );
   }
 
+  async function renameConv(c: ConvSummary) {
+    setOpenMenu(null);
+    const v = window.prompt("重命名会话", c.title || "");
+    if (v === null) return;
+    const title = v.trim();
+    if (!title) return;
+    if (await patchConversation(c.id, { title })) refreshConvs();
+    else setError("重命名失败");
+  }
+
+  async function togglePin(c: ConvSummary) {
+    setOpenMenu(null);
+    if (await patchConversation(c.id, { pinned: !c.pinned })) refreshConvs();
+    else setError("操作失败");
+  }
+
+  async function removeConv(c: ConvSummary) {
+    setOpenMenu(null);
+    if (!window.confirm(`删除会话「${c.title}」？此操作不可恢复。`)) return;
+    if (!(await deleteConversation(c.id))) {
+      setError("删除失败");
+      return;
+    }
+    if (convId === c.id) newChat();
+    refreshConvs();
+  }
+
   async function send() {
     const q = input.trim();
     if (!q || sending) return;
-    if (!apiKey) {
-      setError("请先填写访问密钥");
-      return;
-    }
     setError("");
     setNotice("");
     setInput("");
@@ -208,7 +265,7 @@ export default function App() {
     setSending(true);
     try {
       await askStream(
-        { question: q, apiKey, tenant, conversationId: convId },
+        { question: q, conversationId: convId },
         {
           onMeta: (d) => setConvId(d.conversation_id),
           onCitations: (citations) =>
@@ -233,8 +290,13 @@ export default function App() {
         },
       );
     } catch (e) {
-      setError((e as Error).message);
+      const msg = (e as Error).message;
+      setError(msg);
       setMessages((m) => m.map((x) => (x.id === aid ? { ...x, pending: false } : x)));
+      if (msg.includes("未登录")) {
+        await apiLogout();
+        onLogout();
+      }
     } finally {
       setSending(false);
     }
@@ -248,7 +310,7 @@ export default function App() {
       reason = v ?? undefined;
     }
     try {
-      await sendFeedback({ messageId: msg.id, rating, reason, apiKey, tenant });
+      await sendFeedback({ messageId: msg.id, rating, reason });
       setMessages((m) => m.map((x) => (x.id === msg.id ? { ...x, feedback: rating } : x)));
     } catch {
       setError("反馈提交失败");
@@ -260,39 +322,15 @@ export default function App() {
       <header>
         <div className="brand">设备知识库问答</div>
         <div className="controls">
-          <select value={tenant} onChange={(e) => switchTenant(e.target.value)}>
-            {(tenants.length ? tenants : [tenant]).map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-          <button className="ghost" onClick={() => setShowKey((v) => !v)}>
-            {apiKey ? "密钥已设置" : "填密钥"}
+          <span className="who">
+            {user.username}
+            {user.role === "admin" && <span className="role">管理员</span>}
+          </span>
+          <button className="ghost" onClick={logout}>
+            退出
           </button>
         </div>
       </header>
-
-      {showKey && (
-        <div className="keybar">
-          <p>访问密钥（只保存在本标签页，可随时更换）</p>
-          <div className="row">
-            <input
-              type="password"
-              placeholder="AGENT_API_KEY"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && saveKey()}
-            />
-            <button onClick={saveKey}>保存</button>
-            {apiKey && (
-              <button className="ghost" onClick={clearKey}>
-                清除
-              </button>
-            )}
-          </div>
-        </div>
-      )}
 
       {error && <div className="banner">{error}</div>}
 
@@ -304,8 +342,7 @@ export default function App() {
             </button>
           </div>
           <div className="conv-list">
-            {!apiKey && <div className="side-empty">填密钥后显示历史</div>}
-            {apiKey && convs.length === 0 && <div className="side-empty">暂无历史对话</div>}
+            {convs.length === 0 && <div className="side-empty">暂无历史对话</div>}
             {convs.map((c) => (
               <div
                 key={c.id}

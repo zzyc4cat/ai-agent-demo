@@ -19,7 +19,18 @@ _SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL COLLATE NOCASE UNIQUE,
+    password_hash TEXT,
+    role TEXT NOT NULL DEFAULT 'user',
+    tenant_id TEXT NOT NULL DEFAULT 'demo',
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS auth_sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS preferences (
@@ -85,6 +96,7 @@ CREATE TABLE IF NOT EXISTS feedback (
 CREATE TABLE IF NOT EXISTS kb_conversations (
     id TEXT PRIMARY KEY,
     tenant_id TEXT NOT NULL,
+    user_id INTEGER,
     title TEXT,
     pinned INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -111,12 +123,23 @@ def ensure_db() -> None:
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("PRAGMA foreign_keys=ON")
         conn.executescript(_SCHEMA)
-        # 轻量迁移：旧库补 pinned 列
-        cols = {row[1] for row in conn.execute("PRAGMA table_info(kb_conversations)")}
-        if "pinned" not in cols:
+        # 轻量迁移：旧库补列
+        user_cols = {row[1] for row in conn.execute("PRAGMA table_info(users)")}
+        for col, ddl in (
+            ("password_hash", "ALTER TABLE users ADD COLUMN password_hash TEXT"),
+            ("role", "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'"),
+            ("tenant_id", "ALTER TABLE users ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'demo'"),
+        ):
+            if col not in user_cols:
+                conn.execute(ddl)
+
+        conv_cols = {row[1] for row in conn.execute("PRAGMA table_info(kb_conversations)")}
+        if "pinned" not in conv_cols:
             conn.execute(
                 "ALTER TABLE kb_conversations ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0"
             )
+        if "user_id" not in conv_cols:
+            conn.execute("ALTER TABLE kb_conversations ADD COLUMN user_id INTEGER")
         conn.commit()
 
 

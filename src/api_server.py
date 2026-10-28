@@ -18,7 +18,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -28,7 +28,7 @@ from agent.tools.agent_tools import set_current_user_id
 from agent.tools.middleware import SKILL_WHITELIST
 from rag.rag_service import RagSummarizeService
 from rag.tenant import load_tenant, list_tenants
-from services import kb_store, user_service
+from services import auth_service, kb_store, user_service
 from services.storage import ensure_db, get_conn
 from utils.logger_handler import log_event
 
@@ -105,24 +105,25 @@ def _extract_api_key(
     return ""
 
 
-def require_api_key(
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-) -> None:
-    """
-    鉴权策略：
-    - 已配置 AGENT_API_KEY：必须 Bearer 或 X-API-Key 匹配
-    - 未配置：拒绝受保护端点（避免「用户名即身份」裸奔）；/health 仍开放
-    """
-    expected = _expected_api_key()
-    if not expected:
-        raise HTTPException(
-            status_code=503,
-            detail="服务未配置 AGENT_API_KEY，已拒绝受保护接口。请在 .env 设置后重启。",
-        )
-    provided = _extract_api_key(authorization, x_api_key)
-    if not provided or not secrets.compare_digest(provided, expected):
-        raise HTTPException(status_code=401, detail="Unauthorized")
+def _bearer_token(authorization: str | None) -> str:
+    """从 Authorization: Bearer 取 token。"""
+    auth = (authorization or "").strip()
+    return auth[7:].strip() if auth.lower().startswith("bearer ") else ""
+
+
+def current_user(authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    """登录态：token 无效直接 401。"""
+    user = auth_service.user_from_token(_bearer_token(authorization))
+    if not user:
+        raise HTTPException(status_code=401, detail="未登录或登录已过期")
+    return user
+
+
+def require_admin(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """管理员专属接口。"""
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="需要管理员权限")
+    return user
 
 
 def _get_agent() -> ReactAgent:
@@ -188,27 +189,68 @@ def index():
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    """健康检查，并告知是否已配置 API Key 与可用租户。"""
-    keyed = bool(_expected_api_key())
+    """健康检查（公开）。"""
     return {
         "status": "ok",
-        "api_key_configured": keyed,
         "tenants": [t["id"] for t in list_tenants()],
+        "registration": "open",
     }
+
+
+class AuthRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=32)
+    password: str = Field(..., min_length=8, max_length=128)
+
+
+class AuthResponse(BaseModel):
+    token: str
+    user: dict[str, Any]
+
+
+@app.post("/auth/register", response_model=AuthResponse)
+def register(body: AuthRequest) -> AuthResponse:
+    """开放注册：新用户默认加入 demo 租户、角色 user。"""
+    try:
+        user = auth_service.create_user(body.username, body.password)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    token = auth_service.create_session(int(user["id"]))
+    return AuthResponse(token=token, user=user)
+
+
+@app.post("/auth/login", response_model=AuthResponse)
+def login(body: AuthRequest) -> AuthResponse:
+    """账号密码登录，返回会话 token。"""
+    user = auth_service.authenticate(body.username, body.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="账号或密码错误，或尝试次数过多")
+    token = auth_service.create_session(int(user["id"]))
+    return AuthResponse(token=token, user=user)
+
+
+@app.post("/auth/logout")
+def logout(authorization: str | None = Header(default=None)) -> dict[str, Any]:
+    """退出登录：服务端立即失效该 token。"""
+    auth_service.revoke_session(_bearer_token(authorization))
+    return {"ok": True}
+
+
+@app.get("/auth/me")
+def me(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """当前登录用户。"""
+    return user
 
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(
     body: ChatRequest,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    user: dict[str, Any] = Depends(current_user),
 ) -> ChatResponse:
-    """鉴权后执行一轮对话并返回完整回复。"""
-    require_api_key(authorization, x_api_key)
+    """登录后执行一轮对话并返回完整回复。"""
     ensure_db()
     skill = _validate_skill(body.skill)
     try:
-        u = user_service.switch_or_create(body.username.strip() or "api_user")
+        u = user_service.switch_or_create(user["username"])
     except Exception as e:
         raise HTTPException(status_code=400, detail="无效用户名") from e
     set_current_user_id(u["id"])
@@ -237,16 +279,14 @@ def chat(
 def rag_summarize(
     q: str,
     username: str = "api_user",
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    user: dict[str, Any] = Depends(current_user),
 ) -> dict[str, Any]:
-    """鉴权后对查询做 RAG 总结。"""
-    require_api_key(authorization, x_api_key)
+    """登录后对查询做 RAG 总结。"""
     ensure_db()
     if not (q or "").strip():
         raise HTTPException(status_code=400, detail="q 不能为空")
     try:
-        u = user_service.switch_or_create(username.strip() or "api_user")
+        u = user_service.switch_or_create(user["username"])
     except Exception as e:
         raise HTTPException(status_code=400, detail="无效用户名") from e
     set_current_user_id(u["id"])
@@ -285,21 +325,20 @@ class AskResponse(BaseModel):
 def kb_ask(
     body: AskRequest,
     request: Request,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-    x_tenant: str | None = Header(default="demo", alias="X-Tenant"),
+    user: dict[str, Any] = Depends(current_user),
 ) -> AskResponse:
-    """知识库问答：按 X-Tenant 选择租户，返回答案与引用。"""
-    require_api_key(authorization, x_api_key)
-    check_rate_limit(_client_key(authorization, x_api_key, request))
-    tenant_id = (x_tenant or "demo").strip() or "demo"
+    """知识库问答：租户来自登录用户，返回答案与引用。"""
+    check_rate_limit(f"u{user['id']}")
+    tenant_id = str(user["tenant_id"])
     try:
         load_tenant(tenant_id)
     except KeyError as e:
-        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant_id}") from e
+        raise HTTPException(status_code=500, detail=f"用户所属租户配置缺失: {tenant_id}") from e
     question = body.question.strip()
     rid = uuid.uuid4().hex[:12]
-    conversation_id = kb_store.ensure_conversation(body.conversation_id, tenant_id, question)
+    conversation_id = kb_store.ensure_conversation(
+        body.conversation_id, tenant_id, question, user_id=user["id"]
+    )
     kb_store.add_message(
         message_id=f"{rid}-u",
         conversation_id=conversation_id,
@@ -359,13 +398,10 @@ class FeedbackRequest(BaseModel):
 @app.post("/feedback")
 def feedback(
     body: FeedbackRequest,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-    x_tenant: str | None = Header(default="demo", alias="X-Tenant"),
+    user: dict[str, Any] = Depends(current_user),
 ) -> dict[str, Any]:
     """记录点赞/点踩，进入 badcase 池。"""
-    require_api_key(authorization, x_api_key)
-    tenant_id = (x_tenant or "demo").strip() or "demo"
+    tenant_id = str(user["tenant_id"])
     try:
         load_tenant(tenant_id)
     except KeyError as e:
@@ -388,22 +424,21 @@ def _sse(event: str, data: dict[str, Any]) -> str:
 def kb_stream(
     body: AskRequest,
     request: Request,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
-    x_tenant: str | None = Header(default="demo", alias="X-Tenant"),
+    user: dict[str, Any] = Depends(current_user),
 ):
     """SSE 流式问答：meta → citations → token* → done。"""
-    require_api_key(authorization, x_api_key)
-    check_rate_limit(_client_key(authorization, x_api_key, request))
-    tenant_id = (x_tenant or "demo").strip() or "demo"
+    check_rate_limit(f"u{user['id']}")
+    tenant_id = str(user["tenant_id"])
     try:
         load_tenant(tenant_id)
     except KeyError as e:
-        raise HTTPException(status_code=404, detail=f"租户不存在: {tenant_id}") from e
+        raise HTTPException(status_code=500, detail=f"用户所属租户配置缺失: {tenant_id}") from e
 
     question = body.question.strip()
     rid = uuid.uuid4().hex[:12]
-    conversation_id = kb_store.ensure_conversation(body.conversation_id, tenant_id, question)
+    conversation_id = kb_store.ensure_conversation(
+        body.conversation_id, tenant_id, question, user_id=user["id"]
+    )
     kb_store.add_message(
         message_id=f"{rid}-u",
         conversation_id=conversation_id,
@@ -492,15 +527,67 @@ def kb_stream(
     )
 
 
+class ConversationPatch(BaseModel):
+    title: str | None = Field(default=None, max_length=60)
+    pinned: bool | None = None
+
+
+@app.get("/kb/conversations")
+def my_conversations(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    """当前用户的会话列表（置顶优先）。"""
+    return {"items": kb_store.list_conversations(str(user["tenant_id"]), user_id=int(user["id"]))}
+
+
+@app.get("/kb/conversations/{conversation_id}")
+def my_conversation(
+    conversation_id: str,
+    user: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """读取自己的会话；别人的会话返回 404。"""
+    messages = kb_store.get_messages(conversation_id, user_id=int(user["id"]))
+    if not messages:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return {"id": conversation_id, "messages": messages}
+
+
+@app.patch("/kb/conversations/{conversation_id}")
+def my_patch_conversation(
+    conversation_id: str,
+    body: ConversationPatch,
+    user: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """重命名或置顶自己的会话。"""
+    if body.title is None and body.pinned is None:
+        raise HTTPException(status_code=400, detail="title 与 pinned 至少提供一个")
+    ok = kb_store.update_conversation(
+        conversation_id,
+        title=body.title,
+        pinned=body.pinned,
+        user_id=int(user["id"]),
+    )
+    if not ok:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return {"ok": True}
+
+
+@app.delete("/kb/conversations/{conversation_id}")
+def my_delete_conversation(
+    conversation_id: str,
+    user: dict[str, Any] = Depends(current_user),
+) -> dict[str, Any]:
+    """删除自己的会话。"""
+    if not kb_store.delete_conversation(conversation_id, user_id=int(user["id"])):
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return {"ok": True}
+
+
 @app.get("/admin/conversations")
 def admin_conversations(
     tenant: str = "demo",
     limit: int = 50,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    admin: dict[str, Any] = Depends(require_admin),
 ) -> dict[str, Any]:
     """列出某租户的最近会话（后台用）。"""
-    require_api_key(authorization, x_api_key)
     try:
         load_tenant(tenant)
     except KeyError as e:
@@ -511,28 +598,19 @@ def admin_conversations(
 @app.get("/admin/conversations/{conversation_id}")
 def admin_conversation(
     conversation_id: str,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    admin: dict[str, Any] = Depends(require_admin),
 ) -> dict[str, Any]:
     """读取某会话的消息明细（面试演示 badcase 用）。"""
-    require_api_key(authorization, x_api_key)
     return {"id": conversation_id, "messages": kb_store.get_messages(conversation_id)}
-
-
-class ConversationPatch(BaseModel):
-    title: str | None = Field(default=None, max_length=60)
-    pinned: bool | None = None
 
 
 @app.patch("/admin/conversations/{conversation_id}")
 def admin_patch_conversation(
     conversation_id: str,
     body: ConversationPatch,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    admin: dict[str, Any] = Depends(require_admin),
 ) -> dict[str, Any]:
     """重命名或置顶/取消置顶会话。"""
-    require_api_key(authorization, x_api_key)
     if body.title is None and body.pinned is None:
         raise HTTPException(status_code=400, detail="title 与 pinned 至少提供一个")
     ok = kb_store.update_conversation(
@@ -546,11 +624,9 @@ def admin_patch_conversation(
 @app.delete("/admin/conversations/{conversation_id}")
 def admin_delete_conversation(
     conversation_id: str,
-    authorization: str | None = Header(default=None),
-    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    admin: dict[str, Any] = Depends(require_admin),
 ) -> dict[str, Any]:
     """删除会话及其消息。"""
-    require_api_key(authorization, x_api_key)
     if not kb_store.delete_conversation(conversation_id):
         raise HTTPException(status_code=404, detail="会话不存在")
     return {"ok": True}

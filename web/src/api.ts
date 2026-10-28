@@ -4,52 +4,126 @@ export type Citation = {
   snippet: string;
 };
 
+export type User = {
+  id: number;
+  username: string;
+  role: "user" | "admin";
+  tenant_id: string;
+};
+
+export type StoredMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  citations?: Citation[];
+  latency_ms?: number | null;
+  refused?: number | boolean;
+};
+
+export type ConvSummary = {
+  id: string;
+  title: string;
+  created_at: string;
+  messages: number;
+  pinned?: number;
+};
+
 export type StreamHandlers = {
-  onMeta?: (d: { request_id: string; tenant: string; conversation_id: string }) => void;
+  onMeta?: (d: { request_id: string; conversation_id: string }) => void;
   onCitations?: (c: Citation[]) => void;
   onToken?: (t: string) => void;
   onDone?: (d: { request_id: string; conversation_id: string; refused: boolean; latency_ms: number }) => void;
   onError?: (msg: string) => void;
 };
 
-export async function fetchTenants(): Promise<string[]> {
+let TOKEN = localStorage.getItem("kb_token") ?? "";
+
+export function setToken(token: string): void {
+  TOKEN = token;
+  localStorage.setItem("kb_token", token);
+}
+
+export function clearToken(): void {
+  TOKEN = "";
+  localStorage.removeItem("kb_token");
+}
+
+export function hasToken(): boolean {
+  return !!TOKEN;
+}
+
+function headers(json = false): Record<string, string> {
+  const h: Record<string, string> = {};
+  if (TOKEN) h.Authorization = `Bearer ${TOKEN}`;
+  if (json) h["Content-Type"] = "application/json";
+  return h;
+}
+
+async function failMessage(res: Response): Promise<string> {
   try {
-    const res = await fetch("/health");
-    if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data.tenants) ? data.tenants : [];
+    return data.detail ?? `请求失败（${res.status}）`;
   } catch {
-    return [];
+    return `请求失败（${res.status}）`;
+  }
+}
+
+export async function apiRegister(username: string, password: string): Promise<User> {
+  const res = await fetch("/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) throw new Error(await failMessage(res));
+  const data = await res.json();
+  setToken(data.token);
+  return data.user;
+}
+
+export async function apiLogin(username: string, password: string): Promise<User> {
+  const res = await fetch("/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) throw new Error(await failMessage(res));
+  const data = await res.json();
+  setToken(data.token);
+  return data.user;
+}
+
+export async function apiLogout(): Promise<void> {
+  try {
+    await fetch("/auth/logout", { method: "POST", headers: headers() });
+  } finally {
+    clearToken();
+  }
+}
+
+export async function apiMe(): Promise<User | null> {
+  if (!TOKEN) return null;
+  try {
+    const res = await fetch("/auth/me", { headers: headers() });
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
   }
 }
 
 export async function askStream(
-  opts: { question: string; apiKey: string; tenant: string; conversationId?: string | null },
+  opts: { question: string; conversationId?: string | null },
   h: StreamHandlers,
 ): Promise<void> {
   const res = await fetch("/kb/stream", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": opts.apiKey,
-      "X-Tenant": opts.tenant,
-    },
+    headers: headers(true),
     body: JSON.stringify({ question: opts.question, conversation_id: opts.conversationId ?? null }),
   });
-
-  if (!res.ok || !res.body) {
-    const map: Record<number, string> = {
-      401: "密钥无效，请重新填写",
-      404: "租户不存在",
-      429: "请求太频繁，请稍后再试",
-    };
-    throw new Error(map[res.status] ?? `服务异常（${res.status}）`);
-  }
+  if (!res.ok || !res.body) throw new Error(await failMessage(res));
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
-
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -84,74 +158,9 @@ function dispatch(raw: string, h: StreamHandlers): void {
   else if (event === "error") h.onError?.(parsed.message ?? "生成失败");
 }
 
-export async function sendFeedback(opts: {
-  messageId: string;
-  rating: "up" | "down";
-  reason?: string;
-  apiKey: string;
-  tenant: string;
-}): Promise<void> {
-  await fetch("/feedback", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-API-Key": opts.apiKey,
-      "X-Tenant": opts.tenant,
-    },
-    body: JSON.stringify({
-      message_id: opts.messageId,
-      rating: opts.rating,
-      reason: opts.reason ?? null,
-    }),
-  });
-}
-
-export type StoredMessage = {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  citations?: Citation[];
-  latency_ms?: number | null;
-  refused?: number | boolean;
-};
-
-export type ConvSummary = {
-  id: string;
-  title: string;
-  created_at: string;
-  messages: number;
-  pinned?: number;
-};
-
-export async function patchConversation(
-  id: string,
-  payload: { title?: string; pinned?: boolean },
-  apiKey: string,
-): Promise<boolean> {
-  const res = await fetch(`/admin/conversations/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", "X-API-Key": apiKey },
-    body: JSON.stringify(payload),
-  });
-  return res.ok;
-}
-
-export async function deleteConversation(id: string, apiKey: string): Promise<boolean> {
-  const res = await fetch(`/admin/conversations/${id}`, {
-    method: "DELETE",
-    headers: { "X-API-Key": apiKey },
-  });
-  return res.ok;
-}
-
-export async function fetchConversations(
-  tenant: string,
-  apiKey: string,
-): Promise<ConvSummary[]> {
+export async function fetchConversations(): Promise<ConvSummary[]> {
   try {
-    const res = await fetch(`/admin/conversations?tenant=${encodeURIComponent(tenant)}`, {
-      headers: { "X-API-Key": apiKey },
-    });
+    const res = await fetch("/kb/conversations", { headers: headers() });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data.items) ? data.items : [];
@@ -160,18 +169,46 @@ export async function fetchConversations(
   }
 }
 
-export async function fetchConversation(
-  id: string,
-  apiKey: string,
-): Promise<StoredMessage[]> {
+export async function fetchConversation(id: string): Promise<StoredMessage[]> {
   try {
-    const res = await fetch(`/admin/conversations/${id}`, {
-      headers: { "X-API-Key": apiKey },
-    });
+    const res = await fetch(`/kb/conversations/${id}`, { headers: headers() });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data.messages) ? data.messages : [];
   } catch {
     return [];
   }
+}
+
+export async function patchConversation(
+  id: string,
+  payload: { title?: string; pinned?: boolean },
+): Promise<boolean> {
+  const res = await fetch(`/kb/conversations/${id}`, {
+    method: "PATCH",
+    headers: headers(true),
+    body: JSON.stringify(payload),
+  });
+  return res.ok;
+}
+
+export async function deleteConversation(id: string): Promise<boolean> {
+  const res = await fetch(`/kb/conversations/${id}`, { method: "DELETE", headers: headers() });
+  return res.ok;
+}
+
+export async function sendFeedback(opts: {
+  messageId: string;
+  rating: "up" | "down";
+  reason?: string;
+}): Promise<void> {
+  await fetch("/feedback", {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({
+      message_id: opts.messageId,
+      rating: opts.rating,
+      reason: opts.reason ?? null,
+    }),
+  });
 }

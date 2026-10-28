@@ -2581,3 +2581,21 @@
 
 ### [2026-10-28 16:02:59] stage=model.select req=- user=- model=qwen3_8_flash
 - mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 16:19:54] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=你能做些什么？
+
+### [2026-10-28 16:19:55] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 16:30:25] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 热床最高温度是多少？
+
+### [2026-10-28 16:30:25] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 16:31:17] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=P1 系列热床最高许用温度是多少？
+
+### [2026-10-28 16:31:17] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash

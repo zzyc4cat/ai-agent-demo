@@ -119,6 +119,7 @@ Streamlit 与 React 共用同一套 FastAPI，不直连数据库。
 
 ## 五、改造注意
 
-- 现有 `src/api_server.py` 的 `/chat` 是同步返回；改造时保留它作为兼容，新增 `/chat/stream`。
-- 现有鉴权是单个 `AGENT_API_KEY`；改造后按用户发 token，`AGENT_API_KEY` 仅用于服务间调用。
+- `/chat` 为旧个人助手接口，保留兼容但不再新增；知识库对话走 `/kb/stream`。
+- 鉴权已切换为账号体系：`/auth/login` 发 token，用户侧 `/kb/*` 与管理侧 `/admin/*` 统一校验 `Authorization: Bearer`；不再使用 `AGENT_API_KEY`。
+- 租户与用户由 token 推导，客户端传入的 `X-Tenant` 一律忽略。
 - 所有响应体不得包含 `tenant_id` 之外的租户信息，避免前端拼错。

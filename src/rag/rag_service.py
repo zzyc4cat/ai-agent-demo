@@ -55,6 +55,9 @@ _CODE_RE = re.compile(r"\b\d{4}-\d{4}-\d{4}-\d{4}\b")
 
 class RagSummarizeService:
     """对外 rag_summarize / retrieve_docs；工具 rag_summarize 与 API /rag/summarize 共用。"""
+
+    tenant_id: str | None = None
+
     def __init__(self, tenant_id: str | None = None) -> None:
         """加载 Prompt 并打开对应租户的向量库（缺省为 sample）。"""
         self.tenant_id = tenant_id

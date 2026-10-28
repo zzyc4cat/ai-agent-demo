@@ -193,6 +193,16 @@ select {
   font-size: 13px;
 }
 
+.usage-bar {
+  margin-bottom: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .doc-table {
   width: 100%;
   border-collapse: collapse;

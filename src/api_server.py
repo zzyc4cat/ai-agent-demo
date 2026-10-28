@@ -21,6 +21,7 @@ from typing import Any
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from langchain_community.callbacks import get_openai_callback
 from pydantic import BaseModel, Field
 
 from agent.react_agent import ReactAgent
@@ -29,6 +30,7 @@ from agent.tools.middleware import SKILL_WHITELIST
 from rag.rag_service import RagSummarizeService
 from rag.tenant import load_tenant, list_tenants
 from services import admin_service, auth_service, kb_store, user_service
+from services.cost import estimate_cost
 from services.storage import ensure_db, get_conn
 from utils.logger_handler import log_event
 
@@ -44,12 +46,15 @@ DIST_DIR = Path(__file__).resolve().parents[1] / "web" / "dist"
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    """进程生命周期：启动时确保 SQLite 表存在。"""
+    """进程生命周期：建表 + 清理上次遗留的入库任务。"""
     ensure_db()
+    recovered = admin_service.recover_stale_tasks()
+    if recovered:
+        log_event("api.startup", recovered_tasks=recovered)
     yield
 
 
-app = FastAPI(title="个人综合助手 API", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="设备知识库 API", version="0.3.0", lifespan=lifespan)
 
 if DIST_DIR.is_dir():
     app.mount("/app", StaticFiles(directory=str(DIST_DIR), html=True), name="web")
@@ -318,6 +323,9 @@ class AskResponse(BaseModel):
     answer: str
     citations: list[Citation]
     latency_ms: int
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    cost_cny: float | None = None
     refused: bool
 
 
@@ -349,14 +357,17 @@ def kb_ask(
     started = time.perf_counter()
     svc = _get_kb(tenant_id)
     docs = svc.retrieve_docs(question)
-    if docs:
-        parts = [
-            f"[参考资料{i}] 来源:{(d.metadata or {}).get('source_path', '')}\n{d.page_content}"
-            for i, d in enumerate(docs, start=1)
-        ]
-        answer = svc._chain().invoke({"input": question, "context": "\n\n".join(parts)})
-    else:
-        answer = "不知道"
+    with get_openai_callback() as cb:
+        if docs:
+            parts = [
+                f"[参考资料{i}] 来源:{(d.metadata or {}).get('source_path', '')}\n{d.page_content}"
+                for i, d in enumerate(docs, start=1)
+            ]
+            answer = svc._chain().invoke({"input": question, "context": "\n\n".join(parts)})
+        else:
+            answer = "不知道"
+    prompt_tokens, completion_tokens = cb.prompt_tokens, cb.completion_tokens
+    cost = estimate_cost(prompt_tokens, completion_tokens)
     latency = int((time.perf_counter() - started) * 1000)
     citations = [
         Citation(
@@ -375,9 +386,21 @@ def kb_ask(
         content=str(answer),
         citations=[c.model_dump() for c in citations],
         latency_ms=latency,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
         refused=refused,
     )
-    log_event("api.kb", request_id=rid, tenant=tenant_id, ms=latency, docs=len(docs), refused=refused)
+    log_event(
+        "api.kb",
+        request_id=rid,
+        tenant=tenant_id,
+        ms=latency,
+        docs=len(docs),
+        refused=refused,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        cost_cny=cost,
+    )
     return AskResponse(
         request_id=rid,
         tenant=tenant_id,
@@ -385,6 +408,9 @@ def kb_ask(
         answer=str(answer),
         citations=citations,
         latency_ms=latency,
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        cost_cny=cost,
         refused=refused,
     )
 
@@ -486,12 +512,15 @@ def kb_stream(
             )
             return
         parts: list[str] = []
+        prompt_tokens = completion_tokens = 0
         try:
-            for chunk in svc._chain().stream({"input": question, "context": context}):
-                text = chunk if isinstance(chunk, str) else getattr(chunk, "content", "")
-                if text:
-                    parts.append(str(text))
-                    yield _sse("token", {"text": str(text)})
+            with get_openai_callback() as cb:
+                for chunk in svc._chain().stream({"input": question, "context": context}):
+                    text = chunk if isinstance(chunk, str) else getattr(chunk, "content", "")
+                    if text:
+                        parts.append(str(text))
+                        yield _sse("token", {"text": str(text)})
+            prompt_tokens, completion_tokens = cb.prompt_tokens, cb.completion_tokens
         except Exception as e:  # noqa: BLE001
             log_event("api.kb_stream", level=40, status="error", error=str(e)[:300], request_id=rid)
             yield _sse("error", {"message": "生成失败，请稍后重试"})
@@ -499,6 +528,7 @@ def kb_stream(
         full = "".join(parts)
         latency = int((time.perf_counter() - started) * 1000)
         refused = full.strip().startswith("不知道")
+        cost = estimate_cost(prompt_tokens, completion_tokens)
         kb_store.add_message(
             message_id=rid,
             conversation_id=conversation_id,
@@ -507,9 +537,20 @@ def kb_stream(
             content=full,
             citations=citations,
             latency_ms=latency,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
             refused=refused,
         )
-        log_event("api.kb_stream", request_id=rid, tenant=tenant_id, ms=latency, docs=len(docs))
+        log_event(
+            "api.kb_stream",
+            request_id=rid,
+            tenant=tenant_id,
+            ms=latency,
+            docs=len(docs),
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            cost_cny=cost,
+        )
         yield _sse(
             "done",
             {
@@ -517,6 +558,9 @@ def kb_stream(
                 "conversation_id": conversation_id,
                 "refused": refused,
                 "latency_ms": latency,
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "cost_cny": cost,
             },
         )
 
@@ -688,6 +732,41 @@ def admin_audit(
 ) -> dict[str, Any]:
     """文档操作审计日志。"""
     return {"tenant": tenant, "items": admin_service.list_audit(tenant, min(max(limit, 1), 500))}
+
+
+@app.get("/admin/usage")
+def admin_usage(
+    tenant: str = "demo",
+    days: int = 7,
+    admin: dict[str, Any] = Depends(require_admin),
+) -> dict[str, Any]:
+    """按天统计问答 token 用量与估算成本。"""
+    days = min(max(days, 1), 90)
+    since = f"-{days} days"
+    with get_conn() as conn:
+        rows = conn.execute(
+            """SELECT date(created_at) AS day,
+                      COUNT(*) AS messages,
+                      COALESCE(SUM(prompt_tokens), 0) AS prompt_tokens,
+                      COALESCE(SUM(completion_tokens), 0) AS completion_tokens
+               FROM kb_messages
+               WHERE tenant_id = ? AND role = 'assistant' AND created_at >= datetime('now', ?)
+               GROUP BY day ORDER BY day""",
+            (tenant, since),
+        ).fetchall()
+        total = conn.execute(
+            """SELECT COUNT(*) AS messages,
+                      COALESCE(SUM(prompt_tokens), 0) AS prompt_tokens,
+                      COALESCE(SUM(completion_tokens), 0) AS completion_tokens
+               FROM kb_messages
+               WHERE tenant_id = ? AND role = 'assistant' AND created_at >= datetime('now', ?)""",
+            (tenant, since),
+        ).fetchone()
+    summary = dict(total) if total else {"messages": 0, "prompt_tokens": 0, "completion_tokens": 0}
+    summary["cost_cny"] = estimate_cost(
+        int(summary["prompt_tokens"]), int(summary["completion_tokens"])
+    )
+    return {"tenant": tenant, "days": days, "items": [dict(r) for r in rows], "total": summary}
 
 
 @app.post("/admin/docs/upload")

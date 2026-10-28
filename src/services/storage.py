@@ -110,6 +110,8 @@ CREATE TABLE IF NOT EXISTS kb_messages (
     content TEXT NOT NULL,
     citations_json TEXT,
     latency_ms INTEGER,
+    prompt_tokens INTEGER NOT NULL DEFAULT 0,
+    completion_tokens INTEGER NOT NULL DEFAULT 0,
     refused INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (conversation_id) REFERENCES kb_conversations(id)
@@ -163,6 +165,13 @@ def ensure_db() -> None:
             )
         if "user_id" not in conv_cols:
             conn.execute("ALTER TABLE kb_conversations ADD COLUMN user_id INTEGER")
+
+        msg_cols = {row[1] for row in conn.execute("PRAGMA table_info(kb_messages)")}
+        for col in ("prompt_tokens", "completion_tokens"):
+            if col not in msg_cols:
+                conn.execute(
+                    f"ALTER TABLE kb_messages ADD COLUMN {col} INTEGER NOT NULL DEFAULT 0"
+                )
         conn.commit()
 
 

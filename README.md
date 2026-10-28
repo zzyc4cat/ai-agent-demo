@@ -191,6 +191,7 @@ cd web; npm run build    # 构建，由后端挂在 http://127.0.0.1:8000/app/
 | 软删除 | 移出检索，保留原文件，30 天内可恢复 |
 | 彻底删除 | 超过 30 天自动清理（含原文件），写 `purge_doc` 审计 |
 | 审计日志 | 操作人、动作、对象、时间，删除记录可直接恢复 |
+| 用量统计 | 近 7 天问答次数、token 与估算成本（按 `config/pricing.yml`） |
 
 ![管理页](docs/screenshots/admin.png)
 
@@ -230,16 +231,27 @@ $env:PYTHONPATH="src"; .\.venv\Scripts\python -m pytest tests -q
 $env:PYTHONPATH="src"; .\.venv\Scripts\python scripts/eval_kb.py --ids all
 ```
 
-最近一次（2026-10，qwen3.8-flash）：
+最近一次（2026-10-28，qwen3.8-flash，50 条）：
 
 | 指标 | 结果 |
 |---|---|
 | DocHit@5（40 条可答） | 40/40 |
-| 可答题拒答 | 0 |
+| 可答题拒答 | 0/40 |
 | 库外拒答 | 10/10 |
-| 平均延迟 | 约 6 秒/题 |
+| 延迟 | 均值 978ms，P95 1025ms |
 
-已知短板：X1 侧对比证据不足（m02）；多跳题依赖切分质量。
+详细分析见 [`docs/基线评测报告.md`](docs/基线评测报告.md)。
+
+已知短板：评测集与语料同源、样本小；对比题（m02）证据偏一侧；多轮与指代未覆盖。
+
+### 备份
+
+```powershell
+python scripts/backup.py --keep 7              # app.db + data/tenants + corpus.csv
+python scripts/backup.py --with-vectors        # 额外备份 chroma_db
+```
+
+备份写入 `backups/`（已在 `.gitignore`），默认保留最近 7 份。
 
 ---
 

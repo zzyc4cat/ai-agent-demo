@@ -257,6 +257,23 @@ export async function fetchAudit(tenant: string): Promise<AdminAudit[]> {
   return Array.isArray(data.items) ? data.items : [];
 }
 
+export type UsageTotal = {
+  messages: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  cost_cny: number | null;
+};
+
+export async function fetchUsage(tenant: string, days = 7): Promise<UsageTotal> {
+  const res = await fetch(
+    `/admin/usage?tenant=${encodeURIComponent(tenant)}&days=${days}`,
+    { headers: headers() },
+  );
+  if (!res.ok) throw new Error(await failMessage(res));
+  const data = await res.json();
+  return data.total;
+}
+
 export async function deleteDoc(tenant: string, source: string): Promise<void> {
   const res = await fetch("/admin/docs/delete", {
     method: "POST",

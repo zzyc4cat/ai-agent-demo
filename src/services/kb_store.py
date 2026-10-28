@@ -34,14 +34,17 @@ def add_message(
     content: str,
     citations: list[dict[str, Any]] | None = None,
     latency_ms: int | None = None,
+    prompt_tokens: int = 0,
+    completion_tokens: int = 0,
     refused: bool = False,
 ) -> None:
     """写入一条消息；同一 id 只写一次。"""
     with get_conn() as conn:
         conn.execute(
             """INSERT OR IGNORE INTO kb_messages
-               (id, conversation_id, tenant_id, role, content, citations_json, latency_ms, refused)
-               VALUES(?,?,?,?,?,?,?,?)""",
+               (id, conversation_id, tenant_id, role, content, citations_json, latency_ms,
+                prompt_tokens, completion_tokens, refused)
+               VALUES(?,?,?,?,?,?,?,?,?,?)""",
             (
                 message_id,
                 conversation_id,
@@ -50,6 +53,8 @@ def add_message(
                 content,
                 json.dumps(citations or [], ensure_ascii=False),
                 latency_ms,
+                prompt_tokens,
+                completion_tokens,
                 1 if refused else 0,
             ),
         )

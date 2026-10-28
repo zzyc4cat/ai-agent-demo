@@ -222,6 +222,19 @@ def list_tasks(tenant_id: str, limit: int = 20) -> list[dict[str, Any]]:
     return [dict(r) for r in rows]
 
 
+def recover_stale_tasks() -> int:
+    """启动时把上次进程遗留的 pending/processing 任务标记为失败。"""
+    ensure_db()
+    with get_conn() as conn:
+        cur = conn.execute(
+            """UPDATE kb_tasks
+               SET status='failed', message='服务重启，任务中断，请重新提交',
+                   updated_at=datetime('now')
+               WHERE status IN ('pending','processing')"""
+        )
+        return cur.rowcount
+
+
 def _run_ingest(task_id: str, tenant_id: str, rel_path: str, operator: str, action: str) -> None:
     """后台线程：入库单个文件并更新任务状态。"""
     _update_task(task_id, "processing", "解析并入库中")

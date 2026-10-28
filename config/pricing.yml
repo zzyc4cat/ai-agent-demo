@@ -1,0 +1,6 @@
+# 模型价格（人民币 / 百万 token）。只收录已确认价格，未收录的模型成本记为 None。
+default: qwen3_8_flash
+models:
+  qwen3_8_flash:
+    input_per_million: 0.8
+    output_per_million: 2.7

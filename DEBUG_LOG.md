@@ -2617,3 +2617,717 @@
 
 ### [2026-10-28 17:08:44] stage=model.select req=- user=- model=qwen3_8_flash
 - mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:20:29] stage=user.create req=- user=- model=-
+- user_id=1 username=PinUser
+
+### [2026-10-28 17:20:30] stage=user.create req=- user=- model=-
+- user_id=1 username=KwUser
+
+### [2026-10-28 17:20:31] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 17:20:32] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 17:20:32] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-28 17:20:34] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-28 17:20:58] stage=rag.cache req=- user=- model=-
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-28 17:20:58] stage=rag.cache req=- user=- model=-
+- action=invalidate user_scope=u:1
+
+### [2026-10-28 17:20:58] stage=rag.cache req=- user=- model=-
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:20:58] stage=guard.block req=- user=- model=-
+- kind=leak matched=完整系统提示词
+
+### [2026-10-28 17:20:59] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.025645240835114255 query_preview=完全不存在的星座飞船燃料配方XYZ-999
+
+### [2026-10-28 17:21:00] stage=chat.start req=req_test_p0 user=u1 model=m1
+- phase=0 probe=True
+
+### [2026-10-28 17:21:00] stage=guard.block req=- user=- model=-
+- kind=leak matched=输出\s*(你的|完整的)?\s*系统提示
+
+### [2026-10-28 17:21:00] stage=guard.block req=- user=- model=-
+- kind=ignore_remind matched=ignore\s+(all\s+)?(previous|prior|above)\s+instructions
+
+### [2026-10-28 17:21:00] stage=guard.block req=- user=- model=-
+- kind=leak matched=reveal\s+(your\s+)?(system\s+)?prompt
+
+### [2026-10-28 17:21:00] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:21:00] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:21:00] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:21:00] stage=user.create req=- user=- model=-
+- user_id=1 username=Alice
+
+### [2026-10-28 17:21:00] stage=user.create req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-28 17:21:00] stage=user.switch req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-28 17:21:00] stage=user.create req=- user=- model=-
+- user_id=1 username=Carol
+
+### [2026-10-28 17:21:00] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:21:00] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:21:00] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:21:19] stage=user.create req=- user=- model=-
+- user_id=1 username=SkillUser
+
+### [2026-10-28 17:21:20] stage=user.create req=- user=- model=-
+- user_id=1 username=BUser
+
+### [2026-10-28 17:21:20] stage=guard.block req=- user=- model=-
+- kind=leak matched=打印\s*(你的)?\s*(system\s*)?prompt
+
+### [2026-10-28 17:21:22] stage=rag.cache req=- user=- model=-
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-28 17:21:22] stage=rag.cache req=- user=- model=-
+- action=invalidate user_scope=u:1
+
+### [2026-10-28 17:21:22] stage=rag.cache req=- user=- model=-
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:21:22] stage=rag.retrieve req=- user=- model=-
+- vector_hits=2 bm25_hits=1 fused=2 rerank=rrf rerank_top=2 gated=2 top_score=0.03278688524590164 query_preview=番茄
+
+### [2026-10-28 17:21:22] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=会议纪要
+
+### [2026-10-28 17:21:22] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=0 rerank=skipped rerank_top=0 gated=0 top_score=0.0 best_vector=0.1 best_bm25=0.2 weak_gate=True vector_weak=True bm25_weak=True query_preview=星座飞船
+
+### [2026-10-28 17:21:22] stage=user.create req=- user=- model=-
+- user_id=1 username=HistUser
+
+### [2026-10-28 17:21:22] stage=user.create req=- user=- model=-
+- user_id=2 username=Other
+
+### [2026-10-28 17:25:46] stage=user.create req=- user=- model=-
+- user_id=1 username=PinUser
+
+### [2026-10-28 17:25:46] stage=user.create req=- user=- model=-
+- user_id=1 username=KwUser
+
+### [2026-10-28 17:25:48] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 17:25:49] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 17:25:49] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-28 17:25:51] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-28 17:26:11] stage=rag.cache req=- user=- model=-
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-28 17:26:11] stage=rag.cache req=- user=- model=-
+- action=invalidate user_scope=u:1
+
+### [2026-10-28 17:26:11] stage=rag.cache req=- user=- model=-
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:26:11] stage=guard.block req=- user=- model=-
+- kind=leak matched=完整系统提示词
+
+### [2026-10-28 17:26:12] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.025645240835114255 query_preview=完全不存在的星座飞船燃料配方XYZ-999
+
+### [2026-10-28 17:26:12] stage=chat.start req=req_test_p0 user=u1 model=m1
+- phase=0 probe=True
+
+### [2026-10-28 17:26:12] stage=guard.block req=- user=- model=-
+- kind=leak matched=输出\s*(你的|完整的)?\s*系统提示
+
+### [2026-10-28 17:26:12] stage=guard.block req=- user=- model=-
+- kind=ignore_remind matched=ignore\s+(all\s+)?(previous|prior|above)\s+instructions
+
+### [2026-10-28 17:26:12] stage=guard.block req=- user=- model=-
+- kind=leak matched=reveal\s+(your\s+)?(system\s+)?prompt
+
+### [2026-10-28 17:26:12] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:26:12] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:26:12] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:26:13] stage=user.create req=- user=- model=-
+- user_id=1 username=Alice
+
+### [2026-10-28 17:26:13] stage=user.create req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-28 17:26:13] stage=user.switch req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-28 17:26:13] stage=user.create req=- user=- model=-
+- user_id=1 username=Carol
+
+### [2026-10-28 17:26:13] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:26:13] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:26:13] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:26:35] stage=user.create req=- user=- model=-
+- user_id=1 username=SkillUser
+
+### [2026-10-28 17:26:35] stage=user.create req=- user=- model=-
+- user_id=1 username=BUser
+
+### [2026-10-28 17:26:35] stage=guard.block req=- user=- model=-
+- kind=leak matched=打印\s*(你的)?\s*(system\s*)?prompt
+
+### [2026-10-28 17:26:38] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:26:38] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=answer user_scope=u:9
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- action=invalidate user_scope=u:9
+
+### [2026-10-28 17:26:38] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:26:38] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- action=invalidate user_scope=u:1
+
+### [2026-10-28 17:26:38] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:26:38] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=2 bm25_hits=1 fused=2 rerank=rrf rerank_top=2 gated=2 top_score=0.03278688524590164 query_preview=番茄
+
+### [2026-10-28 17:26:38] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=会议纪要
+
+### [2026-10-28 17:26:38] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=1 bm25_hits=1 fused=0 rerank=skipped rerank_top=0 gated=0 top_score=0.0 best_vector=0.1 best_bm25=0.2 weak_gate=True vector_weak=True bm25_weak=True query_preview=星座飞船
+
+### [2026-10-28 17:26:38] stage=user.create req=- user=- model=qwen3_8_flash
+- user_id=1 username=HistUser
+
+### [2026-10-28 17:26:38] stage=user.create req=- user=- model=qwen3_8_flash
+- user_id=2 username=Other
+
+### [2026-10-28 17:27:09] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:28:37] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 热床最高温度是多少？
+
+### [2026-10-28 17:28:38] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:28:46] stage=user.create req=- user=- model=-
+- user_id=1 username=PinUser
+
+### [2026-10-28 17:28:46] stage=user.create req=- user=- model=-
+- user_id=1 username=KwUser
+
+### [2026-10-28 17:28:48] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 17:28:49] stage=rag.retrieve req=- user=- model=-
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=Z9 机型使用什么冷却液？
+
+### [2026-10-28 17:28:49] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-28 17:28:51] stage=user.create req=- user=- model=-
+- user_id=1 username=OverallUser
+
+### [2026-10-28 17:29:09] stage=rag.cache req=- user=- model=-
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-28 17:29:09] stage=rag.cache req=- user=- model=-
+- action=invalidate user_scope=u:1
+
+### [2026-10-28 17:29:09] stage=rag.cache req=- user=- model=-
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:29:09] stage=guard.block req=- user=- model=-
+- kind=leak matched=完整系统提示词
+
+### [2026-10-28 17:29:10] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.025645240835114255 query_preview=完全不存在的星座飞船燃料配方XYZ-999
+
+### [2026-10-28 17:29:10] stage=chat.start req=req_test_p0 user=u1 model=m1
+- phase=0 probe=True
+
+### [2026-10-28 17:29:10] stage=guard.block req=- user=- model=-
+- kind=leak matched=输出\s*(你的|完整的)?\s*系统提示
+
+### [2026-10-28 17:29:10] stage=guard.block req=- user=- model=-
+- kind=ignore_remind matched=ignore\s+(all\s+)?(previous|prior|above)\s+instructions
+
+### [2026-10-28 17:29:10] stage=guard.block req=- user=- model=-
+- kind=leak matched=reveal\s+(your\s+)?(system\s+)?prompt
+
+### [2026-10-28 17:29:10] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:29:10] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:29:10] stage=bootstrap.ok req=- user=- model=-
+- streamlit=E:\Study\Programs\AI Agent Demo\.venv\Scripts\streamlit.exe venv=E:\Study\Programs\AI Agent Demo\.venv\Scripts\python.exe
+
+### [2026-10-28 17:29:11] stage=user.create req=- user=- model=-
+- user_id=1 username=Alice
+
+### [2026-10-28 17:29:11] stage=user.create req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-28 17:29:11] stage=user.switch req=- user=- model=-
+- user_id=2 username=Bob
+
+### [2026-10-28 17:29:11] stage=user.create req=- user=- model=-
+- user_id=1 username=Carol
+
+### [2026-10-28 17:29:11] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:29:11] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:29:11] stage=user.create req=- user=- model=-
+- user_id=1 username=ToolUser
+
+### [2026-10-28 17:29:33] stage=user.create req=- user=- model=-
+- user_id=1 username=SkillUser
+
+### [2026-10-28 17:29:33] stage=user.create req=- user=- model=-
+- user_id=1 username=BUser
+
+### [2026-10-28 17:29:33] stage=guard.block req=- user=- model=-
+- kind=leak matched=打印\s*(你的)?\s*(system\s*)?prompt
+
+### [2026-10-28 17:29:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:29:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=answer user_scope=u:9
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- action=invalidate user_scope=u:9
+
+### [2026-10-28 17:29:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:9
+
+### [2026-10-28 17:29:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=answer user_scope=u:1
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- action=invalidate user_scope=u:1
+
+### [2026-10-28 17:29:36] stage=rag.cache req=- user=- model=qwen3_8_flash
+- cache_hit=miss user_scope=u:1
+
+### [2026-10-28 17:29:36] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=2 bm25_hits=1 fused=2 rerank=rrf rerank_top=2 gated=2 top_score=0.03278688524590164 query_preview=番茄
+
+### [2026-10-28 17:29:36] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=1 bm25_hits=1 fused=1 rerank=rrf rerank_top=1 gated=1 top_score=0.03278688524590164 query_preview=会议纪要
+
+### [2026-10-28 17:29:36] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=1 bm25_hits=1 fused=0 rerank=skipped rerank_top=0 gated=0 top_score=0.0 best_vector=0.1 best_bm25=0.2 weak_gate=True vector_weak=True bm25_weak=True query_preview=星座飞船
+
+### [2026-10-28 17:29:36] stage=user.create req=- user=- model=qwen3_8_flash
+- user_id=1 username=HistUser
+
+### [2026-10-28 17:29:36] stage=user.create req=- user=- model=qwen3_8_flash
+- user_id=2 username=Other
+
+### [2026-10-28 17:30:29] stage=rag.retrieve req=- user=- model=-
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.031754032258064516 query_preview=X1 报 HMS 0300-0100-0001-0003，说明文档列出的常见原因有哪些？
+
+### [2026-10-28 17:30:29] stage=rag.exact_code req=- user=- model=-
+- code=0300-0100-0001-0003 hits=1
+
+### [2026-10-28 17:30:30] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:30:33] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 系列热床最高允许温度是多少？
+
+### [2026-10-28 17:30:33] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:30:36] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=P1 系列热床最高许用温度是多少？
+
+### [2026-10-28 17:30:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:30:39] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=A1 mini 的热床最高许用温度是多少？
+
+### [2026-10-28 17:30:39] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:30:42] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=热床设置温度超过上限时，打印机会做什么处理？
+
+### [2026-10-28 17:30:42] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:30:47] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=“喷嘴温度异常，加热器可能短路”对应的 HMS 代码是什么？
+
+### [2026-10-28 17:30:47] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:30:50] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=喷嘴温度传感器可能开路时，文档建议先检查什么？
+
+### [2026-10-28 17:30:50] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:31:08] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=热床不升温且温度显示为 0 时，属于文档里的哪种情形？
+
+### [2026-10-28 17:31:08] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:31:11] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=打印机检测不到 AMS 时，操作指导分哪几步？
+
+### [2026-10-28 17:31:11] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:31:22] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=AMS 无法上电时，怎么确认是不是供电问题？
+
+### [2026-10-28 17:31:22] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:31:27] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=AMS 一直进料退料循环，常见原因有哪些？
+
+### [2026-10-28 17:31:27] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:31:31] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=AMS 指示灯的不同状态分别代表什么？
+
+### [2026-10-28 17:31:31] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:31:38] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=打印机提示切刀卡住，为什么会这样、怎么处理？
+
+### [2026-10-28 17:31:38] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:31:52] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=显示屏完全黑屏和“黑屏但背光闪烁”，处理方式一样吗？
+
+### [2026-10-28 17:31:52] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:01] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=触摸屏功能失效，第一步检查什么？
+
+### [2026-10-28 17:32:01] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:04] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=开机后屏幕无法正常启动，第一步做什么？
+
+### [2026-10-28 17:32:04] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:08] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=X1 固件升级失败，文档列出的故障原因有哪些？
+
+### [2026-10-28 17:32:08] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:12] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=挤出机堵塞后，维护指南的核心步骤是什么？
+
+### [2026-10-28 17:32:12] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:19] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=喷嘴/热端堵塞有哪三种处理方法？
+
+### [2026-10-28 17:32:19] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:24] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=清理热端裹头需要哪些工具，大概要多久？
+
+### [2026-10-28 17:32:24] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:28] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.032018442622950824 query_preview=HMS 是什么的缩写，它负责什么？
+
+### [2026-10-28 17:32:28] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:31] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=26 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=HMS 代码里 0300 这一段代表哪个部件？
+
+### [2026-10-28 17:32:31] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:34] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=26 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=HMS 告警等级 0001、0002、0003 分别是什么？
+
+### [2026-10-28 17:32:34] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:39] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=HMS 有哪些局限性？
+
+### [2026-10-28 17:32:39] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:42] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=“无法拉回料线”文档列出的原因有哪几个？
+
+### [2026-10-28 17:32:42] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:45] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=打印 PLA 翘边，除了涂胶还要调哪个参数？
+
+### [2026-10-28 17:32:45] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:32:48] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=热床过温（0001-0003）和 AC 板故障（0001-000A）都指向热床温控，处理上怎么区分？
+
+### [2026-10-28 17:32:48] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:03] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=喷嘴加热短路和喷嘴传感器开路，排查重点有什么不同？
+
+### [2026-10-28 17:33:03] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:15] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=30 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=“打印机堵塞排查”和“喷嘴/热端堵塞”两篇分别解决什么问题？
+
+### [2026-10-28 17:33:15] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:20] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=AMS 无法上电和检测不到 AMS，排查重点有何不同？
+
+### [2026-10-28 17:33:20] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:27] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.032266458495966696 query_preview=屏幕黑屏时，怎么判断是屏幕问题还是电路板问题？
+
+### [2026-10-28 17:33:27] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:36] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=Z 轴回中失败有哪两种原因，分别看哪篇？
+
+### [2026-10-28 17:33:36] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:41] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=32 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=耗材断裂在料管里和在 AMS 内部，处理方式一样吗？
+
+### [2026-10-28 17:33:41] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:47] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=29 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=热床不升温和热床过温，排查思路有什么不同？
+
+### [2026-10-28 17:33:47] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:33:59] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=28 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=用户报 0300-0200-0001-0001，这个码属于哪个部件、该按什么顺序排查？
+
+### [2026-10-28 17:33:59] stage=rag.exact_code req=- user=- model=qwen3_8_flash
+- code=0300-0200-0001-0001 hits=1
+
+### [2026-10-28 17:33:59] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:09] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.031544957774465976 query_preview=A1 报 0300-0100-0001-0008，处理方式和 X1 有什么不同？
+
+### [2026-10-28 17:34:09] stage=rag.exact_code req=- user=- model=qwen3_8_flash
+- code=0300-0100-0001-0008 hits=1
+
+### [2026-10-28 17:34:09] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:23] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=打印 PETG 时冷却风扇有什么限制？
+
+### [2026-10-28 17:34:23] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:26] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=为什么要确认 AMS 主板版本，怎么确认？
+
+### [2026-10-28 17:34:26] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:32] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=25 rerank=rrf rerank_top=8 gated=8 top_score=0.03131881575727918 query_preview=升级失败后，怎么把日志交给客服？
+
+### [2026-10-28 17:34:32] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:38] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=27 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=热床不升温时，怎么判断是热床本身还是 AC 板的问题？
+
+### [2026-10-28 17:34:38] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:46] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=36 rerank=rrf rerank_top=8 gated=8 top_score=0.03125 query_preview=如何更换汽车轮胎？
+
+### [2026-10-28 17:34:46] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:50] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.028371628371628373 query_preview=这台打印机的保修期是几年？
+
+### [2026-10-28 17:34:50] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:52] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=31 rerank=rrf rerank_top=8 gated=8 top_score=0.03131881575727918 query_preview=Bambu Lab 公司是哪一年成立的？
+
+### [2026-10-28 17:34:52] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:54] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=37 rerank=rrf rerank_top=8 gated=8 top_score=0.029957522915269395 query_preview=X1 的最大打印尺寸是多少？
+
+### [2026-10-28 17:34:54] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:34:57] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.027799227799227798 query_preview=可以用洗衣机清洗打印件吗？
+
+### [2026-10-28 17:34:57] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:35:00] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=38 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=X1 打印机的整机重量是多少？
+
+### [2026-10-28 17:35:00] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:35:03] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=39 rerank=rrf rerank_top=8 gated=8 top_score=0.027222222222222224 query_preview=如何申请退款？
+
+### [2026-10-28 17:35:03] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:35:05] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=35 rerank=rrf rerank_top=8 gated=8 top_score=0.03278688524590164 query_preview=Prusa 打印机的校准步骤是什么？
+
+### [2026-10-28 17:35:05] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:35:08] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=33 rerank=rrf rerank_top=8 gated=8 top_score=0.03177805800756621 query_preview=A1 mini 的屏幕怎么更换？
+
+### [2026-10-28 17:35:08] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash
+
+### [2026-10-28 17:35:13] stage=rag.retrieve req=- user=- model=qwen3_8_flash
+- vector_hits=20 bm25_hits=20 fused=34 rerank=rrf rerank_top=8 gated=8 top_score=0.03252247488101534 query_preview=2024 年的固件版本号是多少？
+
+### [2026-10-28 17:35:13] stage=model.select req=- user=- model=qwen3_8_flash
+- mode=auto model_id=qwen3_8_flash model_name=qwen3.8-flash

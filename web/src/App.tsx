@@ -14,6 +14,7 @@ import {
   fetchConversations,
   fetchTask,
   fetchTenants,
+  fetchUsage,
   hasToken,
   importUrl,
   patchConversation,
@@ -25,6 +26,7 @@ import {
   type Citation,
   type ConvSummary,
   type User,
+  type UsageTotal,
 } from "./api";
 
 type Msg = {
@@ -495,12 +497,14 @@ function AdminPage({ onBack }: { onBack: () => void }) {
   const [busy, setBusy] = useState("");
   const [url, setUrl] = useState("");
   const [taskMsg, setTaskMsg] = useState("");
+  const [usage, setUsage] = useState<UsageTotal | null>(null);
 
   async function load(t = tenant) {
     try {
-      const [d, a] = await Promise.all([fetchAdminDocs(t), fetchAudit(t)]);
+      const [d, a, u] = await Promise.all([fetchAdminDocs(t), fetchAudit(t), fetchUsage(t)]);
       setDocs(d);
       setAudit(a);
+      setUsage(u);
       setError("");
     } catch (e) {
       setError((e as Error).message);
@@ -648,6 +652,12 @@ function AdminPage({ onBack }: { onBack: () => void }) {
           <button onClick={onImport}>导入网址</button>
         </div>
         {taskMsg && <div className="task-msg">{taskMsg}</div>}
+        {usage && (
+          <div className="usage-bar">
+            近 7 天：{usage.messages} 次问答 · {usage.prompt_tokens + usage.completion_tokens} tokens
+            {usage.cost_cny != null && ` · 约 ¥${usage.cost_cny}`}
+          </div>
+        )}
 
         {tab === "docs" ? (
           <table className="doc-table">

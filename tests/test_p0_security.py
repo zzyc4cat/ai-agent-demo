@@ -34,38 +34,44 @@ def test_fetch_webpage_blocks_ssrf():
     assert "禁止" in out or "内网" in out or "环回" in out or "本机" in out
 
 
-def test_api_requires_key(monkeypatch):
-    """受保护 API 无密钥或错误密钥应失败。"""
+def test_api_auth_flow():
+    """受保护接口需登录 token；普通用户不得访问管理接口。"""
+    import uuid
+
     from fastapi.testclient import TestClient
+
     import api_server
+    from services.storage import get_conn
 
-    monkeypatch.delenv("AGENT_API_KEY", raising=False)
     client = TestClient(api_server.app)
-    r = client.get("/health")
+    assert client.get("/health").status_code == 200
+
+    # 未登录：用户侧接口一律 401
+    assert client.post("/kb/ask", json={"question": "hi"}).status_code == 401
+    assert client.get("/kb/conversations").status_code == 401
+
+    # 注册即登录
+    name = "t_api_" + uuid.uuid4().hex[:8]
+    r = client.post("/auth/register", json={"username": name, "password": "apipass12345"})
     assert r.status_code == 200
-    assert r.json().get("api_key_configured") is False
+    token = r.json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    assert client.get("/auth/me", headers=headers).json()["username"] == name
 
-    denied = client.post("/chat", json={"message": "hi", "username": "alice"})
-    assert denied.status_code == 503
+    # 普通用户不能碰管理接口
+    assert client.get("/admin/docs", headers=headers).status_code == 403
 
-    monkeypatch.setenv("AGENT_API_KEY", "test-secret-key-p0")
-    # 无密钥
-    r2 = client.post("/chat", json={"message": "hi", "username": "alice"})
-    assert r2.status_code == 401
-    # 错误密钥
-    r3 = client.post(
-        "/chat",
-        json={"message": "hi", "username": "alice"},
-        headers={"X-API-Key": "wrong"},
-    )
-    assert r3.status_code == 401
-    # 非法 skill
-    r4 = client.post(
-        "/chat",
-        json={"message": "hi", "skill": "hack_system"},
-        headers={"Authorization": "Bearer test-secret-key-p0"},
-    )
-    assert r4.status_code == 400
+    # 退出后 token 立即失效
+    assert client.post("/auth/logout", headers=headers).status_code == 200
+    assert client.get("/auth/me", headers=headers).status_code == 401
+
+    # 清理测试账号
+    with get_conn() as conn:
+        conn.execute(
+            "DELETE FROM auth_sessions WHERE user_id = (SELECT id FROM users WHERE username = ?)",
+            (name,),
+        )
+        conn.execute("DELETE FROM users WHERE username = ?", (name,))
 
 
 def test_personal_corpus_path_isolated():

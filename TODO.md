@@ -41,7 +41,7 @@
 
 ### M2 上线（W3）
 - [x] 本地公网暴露：Cloudflare Quick Tunnel（临时地址，重启会变；固定地址需命名隧道 + 域名）
-- [x] API Key 鉴权（`AGENT_API_KEY`，Bearer 或 X-API-Key）
+- [x] 鉴权：API Key（M2）→ 账号 token（M3 已替换，旧 Key 不再用于问答）
 - [x] 限流 10 次/分钟（滑动窗口，按 Key/IP）
 - [x] 结构化日志 + trace_id（`api.access` / `api.kb`）
 - [ ] 成本统计（当前只记延迟与召回数，token 成本待补）
@@ -52,15 +52,19 @@
 ### M3 交付（W4–W5）
 - [x] 租户配置化：`tenants/<id>.yaml` + `scripts/init_tenant.py`
 - [x] 检索隔离：每租户独立 collection（demo 复用 agent_sample，demo2 独立）
-- [x] API 按 `X-Tenant` 路由，未知租户返回 404
 - [x] 隔离测试 `tests/test_isolation.py`（4 条，全部通过）
 - [x] 反馈按租户落库（`feedback` 表 + `POST /feedback`）
-- [x] 对外 React 对话页（Vite + TS，SSE 流式、引用卡片、点赞点踩、租户选择）
+- [x] 对外 React 对话页（Vite + TS，SSE 流式、引用卡片、点赞点踩）
 - [x] `POST /kb/stream` SSE 接口（meta → citations → token* → done）
 - [x] 会话历史按租户落库（`kb_conversations` / `kb_messages`）
-- [x] 管理接口：`GET /admin/conversations`、`GET /admin/conversations/{id}`
-- [x] 前端「新对话」按钮，会话 id 贯穿多轮
-- [ ] 后台页面：文档管理、badcase、租户配置（Streamlit）
+- [x] 会话置顶/取消置顶、重命名、删除
+- [x] 账号体系：scrypt 密码、注册/登录/退出、token 会话（`auth_sessions`）
+- [x] 租户从登录用户推导，不再信任 `X-Tenant`（旧接口已切换）
+- [x] 会话按用户隔离（列表/读取/改名/删除，越权 404）
+- [x] 管理员角色与接口权限（普通用户访问 admin 返回 403）
+- [x] 账号测试 `tests/test_auth.py`（3 条，通过）
+- [ ] P2 管理页：文档列表、删除、审计日志
+- [ ] P3 录入：文件上传、URL 导入（Node 渲染）、异步入库
 
 ### M4 可面试（W6）
 - [ ] 内测 10 人 × 1 周，收集 ≥20 条反馈

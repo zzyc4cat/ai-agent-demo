@@ -1,0 +1,101 @@
+﻿id,type,question,expected_doc,answer_key,verified
+s01,单文档,X1 报 HMS 0300-0100-0001-0003，说明文档列出的常见原因有哪些？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md,热床加热供电链路异常（AC板/主板）、热床温度传感器故障,
+s02,单文档,X1 系列热床最高允许温度是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,110℃,
+s03,单文档,P1 系列热床最高许用温度是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,100℃,
+s04,单文档,A1 mini 的热床最高许用温度是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,80℃,
+s05,单文档,热床设置温度超过上限时，打印机会做什么处理？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,自动调整到最高允许温度并发出 HMS 提示,
+s06,单文档,“喷嘴温度异常，加热器可能短路”对应的 HMS 代码是什么？,fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md,0300-0200-0001-0001,
+s07,单文档,喷嘴温度传感器可能开路时，文档建议先检查什么？,fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0007_喷嘴传感器开路.md,热端硅胶套,
+s08,单文档,热床不升温且温度显示为 0 时，属于文档里的哪种情形？,fault_codes/X1_fault_code_v1.0_热床不升温排查.md,情形一：热床温度显示为 0,
+s09,单文档,打印机检测不到 AMS 时，操作指导分哪几步？,fault_codes/X1_fault_code_v1.0_AMS_is_not_detected_by_the_printer.md,Pin 脚检查、线缆连接检查、电阻测量,
+s10,单文档,AMS 无法上电时，怎么确认是不是供电问题？,fault_codes/X1_fault_code_v1.0_ams-power-failure.md,查 Pin 脚、线缆连接，再测量电压,
+s11,单文档,AMS 一直进料退料循环，常见原因有哪些？,fault_codes/X1_fault_code_v1.0_ams_buffer_signal_lost.md,6Pin 线接触不良、缓冲器弹簧/滑块异常、AMS 内部连接问题,
+s12,单文档,AMS 指示灯的不同状态分别代表什么？,fault_codes/X1_fault_code_v1.0_ams-led-status.md,见文档指示灯状态表,
+s13,单文档,打印机提示切刀卡住，为什么会这样、怎么处理？,fault_codes/X1_fault_code_v1.0_cutter-stuck.md,切刀被耗材或异物卡住，按解决办法清理,
+s14,单文档,显示屏完全黑屏和“黑屏但背光闪烁”，处理方式一样吗？,fault_codes/X1_fault_code_v1.0_black-flicker-screen.md,不一样，文档分两种情形给方案,
+s15,单文档,触摸屏功能失效，第一步检查什么？,fault_codes/X1_fault_code_v1.0_touch-screen-failed.md,检查显示屏端连接，重装 LCD 显示屏,
+s16,单文档,开机后屏幕无法正常启动，第一步做什么？,fault_codes/X1_fault_code_v1.0_SD卡损坏.md,关闭打印机，拔出 SD 卡,
+s17,单文档,X1 固件升级失败，文档列出的故障原因有哪些？,fault_codes/X1_fault_code_v1.0_固件升级失败.md,见文档「故障原因」章节,
+s18,单文档,挤出机堵塞后，维护指南的核心步骤是什么？,fault_codes/X1_fault_code_v1.0_extruder-clog.md,拆卸挤出机并清理内部,
+s19,单文档,喷嘴/热端堵塞有哪三种处理方法？,fault_codes/X1_fault_code_v1.0_nozzle-clog.md,手动挤出、工具疏通、冷拔,
+s20,单文档,清理热端裹头需要哪些工具，大概要多久？,fault_codes/X1_fault_code_v1.0_热端裹头处理.md,吹风机、平头镊子、纸巾、隔热手套，约 25 分钟,
+c01,概念,HMS 是什么的缩写，它负责什么？,manuals/X1_manual_v1.0_HMS介绍.md,Health Management System，监控整机状态并报警,
+c02,概念,HMS 代码里 0300 这一段代表哪个部件？,manuals/X1_manual_v1.0_HMS介绍.md,03 = MC 运动控制，00 为部件序号,
+c03,概念,HMS 告警等级 0001、0002、0003 分别是什么？,manuals/X1_manual_v1.0_HMS介绍.md,0001 错误、0002 警告、0003 提醒,
+c04,概念,HMS 有哪些局限性？,manuals/X1_manual_v1.0_HMS介绍.md,覆盖不全、识别不了丢步、根因复杂,
+c05,概念,“无法拉回料线”文档列出的原因有哪几个？,fault_codes/X1_fault_code_v1.0_cannot-pull-back-filament.md,料线末端膨胀、料盘卡住、AMS 料线进出口问题,
+c06,概念,打印 PLA 翘边，除了涂胶还要调哪个参数？,fault_codes/X1_fault_code_v1.0_possible-problems-in-printing.md,“关闭冷却对前”从 1 改为 3,
+x01,跨文档,热床过温（0001-0003）和 AC 板故障（0001-000A）都指向热床温控，处理上怎么区分？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md|fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0001-000A_AC板故障.md,前者查测温/供电链路，后者按 AC 板故障处理,
+x02,跨文档,喷嘴加热短路和喷嘴传感器开路，排查重点有什么不同？,fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md|fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0007_喷嘴传感器开路.md,短路查加热器与线路，开路先查硅胶套与传感器连接,
+x03,跨文档,“打印机堵塞排查”和“喷嘴/热端堵塞”两篇分别解决什么问题？,fault_codes/X1_fault_code_v1.0_打印头堵塞排查.md|fault_codes/X1_fault_code_v1.0_nozzle-clog.md,前者定位堵在哪一段，后者给喷嘴清理方法,
+x04,跨文档,AMS 无法上电和检测不到 AMS，排查重点有何不同？,fault_codes/X1_fault_code_v1.0_ams-power-failure.md|fault_codes/X1_fault_code_v1.0_AMS_is_not_detected_by_the_printer.md,上电查供电电压；未检测查通信/电阻,
+x05,跨文档,屏幕黑屏时，怎么判断是屏幕问题还是电路板问题？,fault_codes/X1_fault_code_v1.0_black-flicker-screen.md|fault_codes/X1_fault_code_v1.0_电路板供电故障.md,电路板文档有「电路故障与黑屏的区别」章节,
+x06,跨文档,Z 轴回中失败有哪两种原因，分别看哪篇？,fault_codes/X1_fault_code_v1.0_homing-Z-axis-failed_cable-tensioned.md|fault_codes/X1_fault_code_v1.0_homing-z-axis-failed_part-unit-interference.md,热床线缆被拉紧 / 组件干涉,
+x07,跨文档,耗材断裂在料管里和在 AMS 内部，处理方式一样吗？,fault_codes/X1_fault_code_v1.0_耗材断裂.md|fault_codes/X1_fault_code_v1.0_filament-breaks-in-path.md,不一样，文档按断裂位置分情形处理,
+x08,跨文档,热床不升温和热床过温，排查思路有什么不同？,fault_codes/X1_fault_code_v1.0_热床不升温排查.md|fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md,不升温查供电/加热；过温查传感器与持续加热,
+m01,多跳,用户报 0300-0200-0001-0001，这个码属于哪个部件、该按什么顺序排查？,manuals/X1_manual_v1.0_HMS介绍.md|fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md,先按编码定位到喷嘴加热器，再按机型做测量,
+m02,多跳,A1 报 0300-0100-0001-0008，处理方式和 X1 有什么不同？,fault_codes/A1_fault_code_v1.0_HMS-0300-0100-0001-0008_热床加热异常.md,文档按 A1/A1 mini 与 X1/P1 分别给出步骤,
+m03,多跳,打印 PETG 时冷却风扇有什么限制？,fault_codes/X1_fault_code_v1.0_possible-problems-in-printing.md,不超过 70%，且不要用辅助冷却风扇,
+m04,多跳,为什么要确认 AMS 主板版本，怎么确认？,fault_codes/X1_fault_code_v1.0_version-ams-main-board.md,不同版本对应不同升级件，按文档指引确认,
+m05,多跳,升级失败后，怎么把日志交给客服？,fault_codes/X1_fault_code_v1.0_固件升级失败.md|fault_codes/X1_fault_code_v1.0_update-log-to-a-ticket.md,Bambu Handy 或官网，把日志上传到现有工单,
+m06,多跳,热床不升温时，怎么判断是热床本身还是 AC 板的问题？,fault_codes/X1_fault_code_v1.0_热床不升温排查.md|fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0001-000A_AC板故障.md,按供电链路分段测量，结合 AC 板排查步骤,
+n01,库外,如何更换汽车轮胎？,,应回答不知道，语料无关,
+n02,库外,这台打印机的保修期是几年？,,语料未收录保修政策,
+n03,库外,Bambu Lab 公司是哪一年成立的？,,语料未收录公司信息,
+n04,库外,X1 的最大打印尺寸是多少？,,语料未收录规格参数,
+n05,库外,可以用洗衣机清洗打印件吗？,,语料未涉及,
+n06,库外,X1 打印机的整机重量是多少？,,语料未收录整机重量,
+n07,库外,如何申请退款？,,语料只有工单入口，无退款政策,
+n08,库外,Prusa 打印机的校准步骤是什么？,,语料只有 Bambu 设备,
+n09,库外,A1 mini 的屏幕怎么更换？,,语料只有 X1 触屏相关，无 A1 mini 换屏,
+n10,库外,2024 年的固件版本号是多少？,,语料无版本号清单,
+p01,单文档,X1 出现 HMS 0300-0100-0001-0003，常见原因有哪些？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0001-0003_热床过温.md,热床加热供电链路异常（AC板/主板）、热床温度传感器故障,1
+p02,单文档,X1 的热床最高能设到多少度？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,110℃,1
+p03,单文档,P1 热床的温度上限是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,100℃,1
+p04,单文档,A1 mini 热床允许的最高温度是多少？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,80℃,1
+p05,单文档,热床温度设超上限，机器会怎么处理？,fault_codes/X1_fault_code_v1.0_HMS-0300-0100-0003-0008_温度超限.md,自动调整到最高允许温度并发出 HMS 提示,1
+p06,单文档,喷嘴温度异常、加热器短路的 HMS 代码是哪个？,fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0001_喷嘴加热短路.md,0300-0200-0001-0001,1
+p07,单文档,文档说喷嘴温度传感器可能开路时，第一步检查什么？,fault_codes/X1_fault_code_v1.0_HMS-0300-0200-0001-0007_喷嘴传感器开路.md,热端硅胶套,1
+p08,单文档,热床不升温、温度显示 0，属于文档里的哪种情况？,fault_codes/X1_fault_code_v1.0_热床不升温排查.md,情形一：热床温度显示为 0,1
+p09,单文档,打印机找不到 AMS 时，操作步骤分几步？,fault_codes/X1_fault_code_v1.0_AMS_is_not_detected_by_the_printer.md,Pin 脚检查、线缆连接检查、电阻测量,1
+p10,单文档,AMS 上不了电，怎么判断是不是供电问题？,fault_codes/X1_fault_code_v1.0_ams-power-failure.md,查 Pin 脚、线缆连接，再测量电压,1
+p11,单文档,AMS 反复进料退料，通常是什么原因？,fault_codes/X1_fault_code_v1.0_ams_buffer_signal_lost.md,6Pin 线接触不良、缓冲器弹簧/滑块异常、AMS 内部连接问题,1
+p12,单文档,AMS 指示灯各状态是什么意思？,fault_codes/X1_fault_code_v1.0_ams-led-status.md,见文档指示灯状态表,1
+p13,单文档,提示切刀卡住，原因和处理方法是什么？,fault_codes/X1_fault_code_v1.0_cutter-stuck.md,切刀被耗材或异物卡住，按解决办法清理,1
+p14,单文档,屏幕全黑和黑屏但背光闪，处理一样吗？,fault_codes/X1_fault_code_v1.0_black-flicker-screen.md,不一样，文档分两种情形给方案,1
+p15,单文档,触摸屏没反应，先查什么？,fault_codes/X1_fault_code_v1.0_touch-screen-failed.md,检查显示屏端连接，重装 LCD 显示屏,1
+p16,单文档,开机后屏幕起不来，第一步做什么？,fault_codes/X1_fault_code_v1.0_SD卡损坏.md,关闭打印机，拔出 SD 卡,1
+p17,单文档,X1 固件升级失败有哪些原因？,fault_codes/X1_fault_code_v1.0_固件升级失败.md,见文档「故障原因」章节,1
+p18,单文档,挤出机堵了，维护指南的核心步骤是什么？,fault_codes/X1_fault_code_v1.0_extruder-clog.md,拆卸挤出机并清理内部,1
+p19,单文档,喷嘴/热端堵塞的三种处理办法是什么？,fault_codes/X1_fault_code_v1.0_nozzle-clog.md,手动挤出、工具疏通、冷拔,1
+p20,单文档,清理热端裹头要哪些工具，耗时多久？,fault_codes/X1_fault_code_v1.0_热端裹头处理.md,吹风机、平头镊子、纸巾、隔热手套，约 25 分钟,1
+p21,概念,HMS 全称是什么，负责什么？,manuals/X1_manual_v1.0_HMS介绍.md,Health Management System，监控整机状态并报警,1
+p22,概念,HMS 代码中的 0300 代表哪个部件？,manuals/X1_manual_v1.0_HMS介绍.md,03 = MC 运动控制，00 为部件序号,1
+p23,概念,HMS 的 0001、0002、0003 告警等级分别是什么？,manuals/X1_manual_v1.0_HMS介绍.md,0001 错误、0002 警告、0003 提醒,1
+p24,概念,HMS 有什么局限？,manuals/X1_manual_v1.0_HMS介绍.md,覆盖不全、识别不了丢步、根因复杂,1
+p25,概念,文档里“无法拉回料线”的原因有哪些？,fault_codes/X1_fault_code_v1.0_cannot-pull-back-filament.md,料线末端膨胀、料盘卡住、AMS 料线进出口问题,1
+n11,库外,如何更换空调滤芯？,,不知道,1
+n12,库外,如何申请发票？,,不知道,1
+n13,库外,客服电话是多少？,,不知道,1
+n14,跨文档,哪里能买到原装配件？,X1_fault_code_v1.0_热端裹头处理.md|X1_fault_code_v1.0_version-ams-main-board.md,见语料：购买渠道 / 移动端 App 说明,1
+n15,库外,支持激光雕刻吗？,,不知道,1
+n16,跨文档,有没有手机 App？,X1_manual_v1.0_HMS介绍.md|X1_fault_code_v1.0_update-log-to-a-ticket.md,见语料：购买渠道 / 移动端 App 说明,1
+n17,库外,打印机的包装尺寸是多少？,,不知道,1
+n18,库外,保修卡丢了还能保修吗？,,不知道,1
+n19,库外,可以打印食品接触件吗？,,不知道,1
+n20,库外,如何安装第三方固件？,,不知道,1
+n21,库外,打印机的使用寿命是几年？,,不知道,1
+n22,库外,是否支持远程断电续打？,,不知道,1
+n23,库外,打印机的固件是开源的吗？,,不知道,1
+n24,库外,如何校准房间湿度？,,不知道,1
+n25,库外,废料怎么回收？,,不知道,1
+n26,库外,打印机可以带上飞机吗？,,不知道,1
+n27,库外,哪里下载切片软件？,,不知道,1
+n28,库外,打印机可以托运吗？,,不知道,1
+n29,库外,有没有官方 Discord 社群？,,不知道,1
+n30,库外,打印机的生产日期在哪里看？,,不知道,1
+n31,库外,支持 Alexa 语音控制吗？,,不知道,1
+n32,库外,打印机的颜色有几种？,,不知道,1
+n33,库外,如何删除账户？,,不知道,1
+n34,库外,是否支持多语言界面？,,不知道,1
+n35,库外,打印机的工作噪音是多少分贝？,,不知道,1

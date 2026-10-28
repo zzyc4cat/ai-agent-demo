@@ -1,0 +1,17 @@
+﻿id,type,question,expected_doc,hit5,rank,docs,ms,provider,answer,answer_key
+n14,跨文档,哪里能买到原装配件？,X1_fault_code_v1.0_热端裹头处理.md|X1_fault_code_v1.0_version-ams-main-board.md,1,2,8,1030,dashscope,"根据参考资料，原装配件的购买渠道及获取方式如下：
+
+1.  **官方商城**：可以购买相关的配件（如热端清理损坏后的配件、新版AMS上下料器或入料口组件等）。
+    *   依据：**[参考资料5]** (来源: `data/tenants/demo/fault_codes/X1_fault_code_v1.0_热端裹头处理.md`) 提到：“请通过官方商城购买相关的配件”。
+    *   依据：**[参考资料4]** (来源: `data/tenants/demo/fault_codes/X1_fault_code_v1.0_version-ams-main-board.md`) 提到：“客户从官方商城只能买到霍尔版本（新版）的上下料和入料口组件”。
+
+2.  **官方电商平台**：包括京东、天猫、抖音。
+    *   依据：**[参考资料4]** (来源: `data/tenants/demo/fault_codes/X1_fault_code_v1.0_version-ams-main-board.md`) 多次提及“通过官方电商平台（京东、天猫、抖音）购买AMS”。
+
+3.  **联系拓竹服务团队/售后团队**：在特定情况下（如AMS主板兼容性问题），可申请免费寄送新主板；或在遇到故障时联系在线技术支持。
+    *   依据：**[参考资料4]** (来源: `da",见语料：购买渠道 / 移动端 App 说明
+n16,跨文档,有没有手机 App？,X1_manual_v1.0_HMS介绍.md|X1_fault_code_v1.0_update-log-to-a-ticket.md,1,1,8,979,dashscope,"有手机 App。
+
+依据如下：
+1. **参考资料2**（来源：`data/tenants/demo/manuals/X1_manual_v1.0_HMS介绍.md`）提到：“HMS也将同时发送一条通知到**移动端APP**上。”
+2. **参考资料3**（来源：`data/tenants/demo/fault_codes/X1_fault_code_v1.0_update-log-to-a-ticket.md`）明确指出了该 App 的名称为“**Bambu Handy**”，并描述了在 App 中查看工单和上传日志的操作步骤。",见语料：购买渠道 / 移动端 App 说明

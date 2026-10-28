@@ -140,7 +140,7 @@ def main() -> int:
             "type": r["type"],
             "question": q,
             "expected_doc": r["expected_doc"],
-            "hit5": 1 if rank else 0,
+            "hit5": 1 if rank and rank <= 5 else 0,
             "rank": rank,
             "docs": len(docs),
             "ms": ms,
@@ -148,7 +148,7 @@ def main() -> int:
             "answer": (answer or "")[:600],
             "answer_key": r["answer_key"],
         })
-        print(f"{r['id']:<5}{'YES' if rank else 'no':<7}{rank:<6}{len(docs):<6}{ms:<7}{q[:36]}")
+        print(f"{r['id']:<5}{'YES' if rank and rank <= 5 else 'no':<7}{rank:<6}{len(docs):<6}{ms:<7}{q[:36]}")
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -14,6 +14,8 @@ FastAPI + React + Chroma + SQLite，单机可跑，支持最小多租户与管�
 | [`architecture.md`](architecture.md) | 架构与数据流 |
 | [`AGENTS.md`](AGENTS.md) | AI / 开发者入口 |
 | [`docs/vibe-coding.md`](docs/vibe-coding.md) | 协作与开发规范 |
+| [`docs/设备知识管理规范.md`](docs/设备知识管理规范.md) | 入库、版本、删除、审计、备份规则 |
+| [`docs/基线评测报告.md`](docs/基线评测报告.md) | 评测口径与结果 |
 | [`development.md`](development.md) | 命令与回归清单 |
 | [`TODO.md`](TODO.md) | 当前状态快照 |
 
@@ -178,6 +180,7 @@ cd web; npm run build    # 构建，由后端挂在 http://127.0.0.1:8000/app/
 - 密码 scrypt 加盐哈希，数据库不存明文
 - 登录失败 5 次锁定 5 分钟
 - token 存 `auth_sessions`，7 天过期，退出即失效
+- 管理员可查看**本租户全部**会话与反馈（客服与质量分析需要）；普通用户只能看自己的
 
 ---
 
@@ -231,18 +234,18 @@ $env:PYTHONPATH="src"; .\.venv\Scripts\python -m pytest tests -q
 $env:PYTHONPATH="src"; .\.venv\Scripts\python scripts/eval_kb.py --ids all
 ```
 
-最近一次（2026-10-28，qwen3.8-flash，50 条）：
+最近一次（2026-10-28，qwen3.8-flash）：
 
-| 指标 | 结果 |
-|---|---|
-| DocHit@5（40 条可答） | 40/40 |
-| 可答题拒答 | 0/40 |
-| 库外拒答 | 10/10 |
-| 延迟 | 均值 978ms，P95 1025ms |
+| 指标 | 50 条基线 | 100 条扩展 |
+|---|---|---|
+| DocHit@5 | 40/40 | 66/67 |
+| 可答题拒答 | 0/40 | 0/67 |
+| 库外拒答 | 10/10 | 33/33 |
+| 延迟均值 | 978ms | 1065ms |
 
 详细分析见 [`docs/基线评测报告.md`](docs/基线评测报告.md)。
 
-已知短板：评测集与语料同源、样本小；对比题（m02）证据偏一侧；多轮与指代未覆盖。
+已知短板：评测集与语料同源；改写题 p01 排到第 6；拒答判定需人工复核（关键词会误判）。
 
 ### 备份
 

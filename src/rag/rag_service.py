@@ -14,7 +14,7 @@ from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 
-from agent.tools.prompt_guard import wrap_untrusted
+from rag.untrusted import wrap_untrusted
 from model.factory import get_chat_model, get_model_router
 from rag.bm25_index import Bm25Index
 from rag.kb_meta import get_kb_version

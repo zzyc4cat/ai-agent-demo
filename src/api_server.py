@@ -1,15 +1,13 @@
 """
-可选 HTTP API（uvicorn api_server:app）。
+HTTP API（uvicorn api_server:app）。
 
-GET /health 公开。POST /chat 与 GET /rag/summarize 必须 AGENT_API_KEY
-（Bearer 或 X-API-Key）。username 只在鉴权之后选择数据空间，不是口令。
-skill 必须在 SKILL_WHITELIST。异常对客户端脱敏。
+/health 与 /auth/* 公开；/kb/* 与 /admin/* 需要登录 token（Bearer）。
+租户与用户由 token 推导；异常对客户端脱敏。
 """
 from __future__ import annotations
 
 import json
 import os
-import secrets
 import time
 import uuid
 from collections import deque
@@ -24,17 +22,13 @@ from fastapi.staticfiles import StaticFiles
 from langchain_community.callbacks import get_openai_callback
 from pydantic import BaseModel, Field
 
-from agent.react_agent import ReactAgent
-from agent.tools.agent_tools import set_current_user_id
-from agent.tools.middleware import SKILL_WHITELIST
 from rag.rag_service import RagSummarizeService
 from rag.tenant import load_tenant, list_tenants
-from services import admin_service, auth_service, kb_store, user_service
+from services import admin_service, auth_service, kb_store
 from services.cost import estimate_cost
 from services.storage import ensure_db, get_conn
 from utils.logger_handler import log_event
 
-_agent: ReactAgent | None = None
 _kb_cache: dict[str, RagSummarizeService] = {}
 
 RATE_LIMIT_PER_MIN = int(os.getenv("RATE_LIMIT_PER_MIN", "10"))
@@ -78,38 +72,6 @@ async def trace_middleware(request: Request, call_next):
     return response
 
 
-class ChatRequest(BaseModel):
-    message: str = Field(..., min_length=1, max_length=16000)
-    username: str = Field(default="api_user", max_length=64)
-    skill: str = Field(default="default", max_length=64)
-    conversation_id: str | None = Field(default=None, max_length=128)
-
-
-class ChatResponse(BaseModel):
-    request_id: str
-    conversation_id: str
-    reply: str
-    user_id: int
-
-
-def _expected_api_key() -> str:
-    """读取环境变量 AGENT_API_KEY。"""
-    return (os.getenv("AGENT_API_KEY") or "").strip()
-
-
-def _extract_api_key(
-    authorization: str | None,
-    x_api_key: str | None,
-) -> str:
-    """从 Bearer 或 X-API-Key 头取出客户端密钥。"""
-    if x_api_key and x_api_key.strip():
-        return x_api_key.strip()
-    auth = (authorization or "").strip()
-    if auth.lower().startswith("bearer "):
-        return auth[7:].strip()
-    return ""
-
-
 def _bearer_token(authorization: str | None) -> str:
     """从 Authorization: Bearer 取 token。"""
     auth = (authorization or "").strip()
@@ -131,14 +93,6 @@ def require_admin(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any
     return user
 
 
-def _get_agent() -> ReactAgent:
-    """懒创建并缓存进程内 ReactAgent 单例。"""
-    global _agent
-    if _agent is None:
-        _agent = ReactAgent(model_mode="auto")
-    return _agent
-
-
 def _get_kb(tenant_id: str) -> RagSummarizeService:
     """按租户懒创建并缓存知识库问答服务。"""
     svc = _kb_cache.get(tenant_id)
@@ -146,14 +100,6 @@ def _get_kb(tenant_id: str) -> RagSummarizeService:
         svc = RagSummarizeService(tenant_id=tenant_id)
         _kb_cache[tenant_id] = svc
     return svc
-
-
-def _client_key(authorization: str | None, x_api_key: str | None, request: Request) -> str:
-    """限流键：优先 API Key，其次客户端 IP。"""
-    provided = _extract_api_key(authorization, x_api_key)
-    if provided:
-        return provided
-    return request.client.host if request.client else "unknown"
 
 
 def check_rate_limit(key: str) -> None:
@@ -169,17 +115,6 @@ def check_rate_limit(key: str) -> None:
                 detail=f"请求过于频繁，限制 {RATE_LIMIT_PER_MIN} 次/分钟",
             )
         bucket.append(now)
-
-
-def _validate_skill(skill: str) -> str:
-    """校验 skill 是否在白名单，非法则 400。"""
-    name = (skill or "default").strip() or "default"
-    if name not in SKILL_WHITELIST:
-        raise HTTPException(
-            status_code=400,
-            detail=f"skill 不在白名单：{sorted(SKILL_WHITELIST)}",
-        )
-    return name
 
 
 @app.get("/", include_in_schema=False)
@@ -244,65 +179,6 @@ def logout(authorization: str | None = Header(default=None)) -> dict[str, Any]:
 def me(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     """当前登录用户。"""
     return user
-
-
-@app.post("/chat", response_model=ChatResponse)
-def chat(
-    body: ChatRequest,
-    user: dict[str, Any] = Depends(current_user),
-) -> ChatResponse:
-    """登录后执行一轮对话并返回完整回复。"""
-    ensure_db()
-    skill = _validate_skill(body.skill)
-    try:
-        u = user_service.switch_or_create(user["username"])
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="无效用户名") from e
-    set_current_user_id(u["id"])
-    conv = body.conversation_id or uuid.uuid4().hex
-    rid = uuid.uuid4().hex[:12]
-    try:
-        agent = _get_agent()
-        chunks: list[str] = []
-        for piece in agent.execute_stream(
-            body.message,
-            user_id=str(u["id"]),
-            conversation_id=conv,
-            skill=skill,
-            request_id=rid,
-        ):
-            if piece:
-                chunks.append(piece)
-        reply = "".join(chunks).strip() or "不知道"
-    except Exception as e:
-        log_event("api.chat", level=40, status="error", error=str(e)[:500], request_id=rid)
-        raise HTTPException(status_code=500, detail="执行失败，请查看服务端日志") from e
-    return ChatResponse(request_id=rid, conversation_id=conv, reply=reply, user_id=int(u["id"]))
-
-
-@app.get("/rag/summarize")
-def rag_summarize(
-    q: str,
-    username: str = "api_user",
-    user: dict[str, Any] = Depends(current_user),
-) -> dict[str, Any]:
-    """登录后对查询做 RAG 总结。"""
-    ensure_db()
-    if not (q or "").strip():
-        raise HTTPException(status_code=400, detail="q 不能为空")
-    try:
-        u = user_service.switch_or_create(user["username"])
-    except Exception as e:
-        raise HTTPException(status_code=400, detail="无效用户名") from e
-    set_current_user_id(u["id"])
-    from rag.rag_service import RagSummarizeService
-
-    try:
-        text = RagSummarizeService().rag_summarize(q, user_id=u["id"])
-    except Exception as e:
-        log_event("api.rag", level=40, status="error", error=str(e)[:500])
-        raise HTTPException(status_code=500, detail="检索失败，请查看服务端日志") from e
-    return {"query": q, "answer": text, "user_id": u["id"]}
 
 
 class AskRequest(BaseModel):

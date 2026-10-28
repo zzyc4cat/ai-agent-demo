@@ -107,19 +107,20 @@ data: {"code":"RETRIEVAL_EMPTY","message":"没有找到可靠依据"}
 | `PARSE_FAILED` | 422 | 文档解析失败 | 后台标记失败原因 |
 | `INTERNAL` | 500 | 服务异常 | 通用提示 + 重试 |
 
-## 四、Streamlit 页面函数
+## 四、前端页面（React）
 
-| 页面 | 函数 | 说明 |
+| 页面 | 组件 | 说明 |
 |---|---|---|
-| 文档管理 | `render_documents()` | 列表、上传、删除、重建 |
-| badcase | `render_badcases()` | 筛选、查看、标记 |
-| 租户配置 | `render_tenant_config()` | 表单，保存后写 `tenants/*.yaml` |
+| 登录/注册 | `Login` | 账号密码，token 存 localStorage |
+| 对话 | `ChatApp` | 流式问答、引用、反馈 |
+| 历史 | 侧边栏 | 置顶、重命名、删除、刷新恢复 |
+| 管理 | `AdminPage` | 文档列表、上传、URL 导入、删除/恢复、审计、用量 |
 
-Streamlit 与 React 共用同一套 FastAPI，不直连数据库。
+前端只通过 `web/src/api.ts` 访问后端，不直连数据库。
 
 ## 五、改造注意
 
-- `/chat` 为旧个人助手接口，保留兼容但不再新增；知识库对话走 `/kb/stream`。
+- `/chat` 与 `/rag/summarize` 已于 2026-10-28 删除；知识库对话统一走 `/kb/stream`。
 - 鉴权已切换为账号体系：`/auth/login` 发 token，用户侧 `/kb/*` 与管理侧 `/admin/*` 统一校验 `Authorization: Bearer`；不再使用 `AGENT_API_KEY`。
 - 租户与用户由 token 推导，客户端传入的 `X-Tenant` 一律忽略。
 - 所有响应体不得包含 `tenant_id` 之外的租户信息，避免前端拼错。

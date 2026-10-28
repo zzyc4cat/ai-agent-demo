@@ -19,17 +19,15 @@ FastAPI + React + Chroma + SQLite；语料只用公开设备文档。
 ## 目录（现状）
 
 ```text
-app.py                 Streamlit 旧入口（个人助手，已冻结）
 src/
   api_server.py        FastAPI 入口（/auth /kb /admin /health）
-  agent/              旧 Agent（冻结，不新增）
-  rag/                入库、切分、检索、缓存、租户配置
-  services/           账号、会话、管理、SQLite
-  model/              模型路由
-  utils/              配置、日志、文件、路径
+  rag/                 入库、切分、检索、缓存、租户配置
+  services/            账号、会话、管理、成本、SQLite
+  model/               模型路由
+  utils/               配置、日志、文件、路径
 web/                  React 前端（Vite + TS，构建产物 dist/ 随仓库）
 tests/                pytest
-scripts/              bootstrap、评测、建租户、建账号
+scripts/              bootstrap、评测、建租户、建账号、备份
 tenants/              租户 YAML（collection / corpus / scope）
 docs/                 规范与截图
 config/               YAML
@@ -71,7 +69,7 @@ $env:USER_PASSWORD="***"; .\.venv\Scripts\python scripts/create_user.py --userna
 
 - **M1–M3 已完成**：评测基线、本地部署、多租户、账号体系、React 对话页、管理页（上传/URL 导入/审计）。
 - **M4 待启动**：内测 10 人、demo 视频、模拟面试、简历。
-- 旧个人助手功能（天气、待办、笔记等）冻结，不新增。
+- 旧个人助手代码（`agent/`、Streamlit 入口、`/chat`）已于 2026-10-28 清理。
 - PRD v0.10 是目标；实现进度以 `TODO.md` 为准。
 
 ## 代码风格

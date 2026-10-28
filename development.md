@@ -34,9 +34,6 @@ npm run dev
 # 后端 API
 $env:PYTHONPATH="src"; uvicorn api_server:app --app-dir src --port 8000 --reload
 
-# 管理台（Streamlit）
-streamlit run app.py
-
 # 全量测试
 $env:PYTHONPATH="src"; pytest tests -q
 

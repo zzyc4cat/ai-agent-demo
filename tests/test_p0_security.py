@@ -1,10 +1,12 @@
-"""P0 安全与正确性：API 鉴权、SSRF、个人语料路径、技能白名单。"""
+# -*- coding: utf-8 -*-
+"""P0 安全与正确性：登录鉴权、个人语料路径隔离。"""
 from __future__ import annotations
 
 import os
 import sys
+import uuid
 
-import pytest
+from fastapi.testclient import TestClient
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(ROOT, "src")
@@ -12,34 +14,8 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, SRC)
 
 
-def test_ssrf_blocks_localhost_and_metadata():
-    """SSRF 检查应拦截本机与云元数据地址。"""
-    from agent.tools.ssrf_guard import unsafe_url_reason
-
-    assert unsafe_url_reason("http://127.0.0.1/secret")
-    assert unsafe_url_reason("http://localhost/x")
-    assert unsafe_url_reason("http://169.254.169.254/latest/meta-data/")
-    assert unsafe_url_reason("ftp://example.com") is not None
-    # 公网主机名：仅检查解析结果；example.com 解析到公网则通过
-    reason = unsafe_url_reason("https://example.com/")
-    assert reason is None or "无法解析" in reason
-
-
-def test_fetch_webpage_blocks_ssrf():
-    """fetch_webpage 对危险 URL 应拒抓。"""
-    from agent.tools.agent_tools import fetch_webpage
-
-    out = fetch_webpage.invoke({"url": "http://127.0.0.1:8080/admin"})
-    assert "不知道" in out
-    assert "禁止" in out or "内网" in out or "环回" in out or "本机" in out
-
-
 def test_api_auth_flow():
     """受保护接口需登录 token；普通用户不得访问管理接口。"""
-    import uuid
-
-    from fastapi.testclient import TestClient
-
     import api_server
     from services.storage import get_conn
 
@@ -83,23 +59,3 @@ def test_personal_corpus_path_isolated():
     assert p1 != p2
     assert p1.endswith("/1") or p1.endswith("\\1") or p1.endswith("1")
     assert "2" in p2
-
-
-def test_skill_whitelist_matches_files():
-    """白名单与 prompts/skills 文件一致。"""
-    from pathlib import Path
-    from agent.tools.middleware import SKILL_WHITELIST
-
-    skills_dir = Path(ROOT) / "prompts" / "skills"
-    for name in SKILL_WHITELIST:
-        if name == "default":
-            continue
-        assert (skills_dir / f"{name}.txt").is_file(), name
-
-
-def test_calculator_rejects_huge_pow():
-    """计算器应拒绝过深幂运算。"""
-    from agent.tools.tools_b import calculator
-
-    out = calculator.invoke({"expression": "9**9**9**9"})
-    assert "不知道" in out

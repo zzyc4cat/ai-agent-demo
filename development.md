@@ -50,7 +50,13 @@ $env:PYTHONPATH="src"; python scripts/run_eval.py
 $env:PYTHONPATH="src"; python scripts/build_corpus.py --tenant demo
 
 # 开新租户
-$env:PYTHONPATH="src"; python -m scripts.init_tenant --id demo2
+$env:PYTHONPATH="src"; python scripts/init_tenant.py --id demo2 --force
+
+# 建账号（密码走 USER_PASSWORD 或交互输入）
+$env:PYTHONPATH="src"; python scripts/create_user.py --username someone --role admin
+
+# 前端构建
+cd web; npm run build
 ```
 
 ## 环境变量
@@ -58,12 +64,14 @@ $env:PYTHONPATH="src"; python -m scripts.init_tenant --id demo2
 | 变量 | 必填 | 用途 |
 |---|---|---|
 | `DASHSCOPE_API_KEY` | 是 | 通义（embedding/重排/备选模型） |
-| `DEEPSEEK_API_KEY` | 是 | 线上生成模型 |
-| `AGENT_API_KEY` | 是 | FastAPI 鉴权 |
+| `DEEPSEEK_API_KEY` | 是 | 备选生成模型 |
+| `NODE_BIN` | 否 | URL 导入用的 node 路径；不设则用 PATH 里的 node |
 | `LOG_LEVEL` / `LOG_JSON` | 否 | 日志 |
 | `TENANT_DEFAULT` | 否 | 默认租户 id |
+| `USER_PASSWORD` | 否 | 仅 `create_user.py` 一次性使用，用完即弃 |
 
 **纪律**：`.env` 不进 git；新增变量同时更新 `.env.example`。
+账号密码不写进脚本、不写进 `AGENT_API_KEY` 之类的共享密钥——登录走 `/auth/login`，鉴权用 Bearer token。
 
 ## 回归清单
 
@@ -73,9 +81,11 @@ $env:PYTHONPATH="src"; python -m scripts.init_tenant --id demo2
 |---|---|---|
 | 检索 / 切分 / 提示词 | 50 条评测 | 四个数不低于上次，且记录到 `logs/eval/` |
 | 数据表结构 | `pytest tests -q` | 全绿，隔离测试必过 |
-| 多租户逻辑 | `tests/test_isolation.py` | 3 条越权用例全部拦截 |
-| 前端对话页 | 手工：登录 → 提问 → 引用 → 反馈 | SSE 正常、引用可展开、反馈入库 |
-| 上传/删除文档 | 手工 + 单测 | 上传后能检索到，删除后检索不到 |
+| 账号 / 权限 | `pytest tests/test_auth.py -q` + 手工越权 | 401/403/404 符合预期 |
+| 多租户逻辑 | `tests/test_isolation.py` | 越权用例全部拦截 |
+| 前端对话页 | 手工：登录 → 提问 → 引用 → 反馈 | SSE 正常、引用可展示、反馈入库 |
+| 上传 / 导入 | 手工 + 任务状态 | 任务 done、可检索、审计有记录 |
+| 删除 / 恢复 | 手工 | 软删除后可恢复；30 天后彻底删除 |
 | 部署配置 | 手工访问 `/health` | 200，且公网可访问 |
 
 **任何改动后都不许跳过 `pytest`。** 评测与测试是两件事：测试保功能，评测保效果。

@@ -1,4 +1,4 @@
-﻿"""
+"""
 YAML 配置加载器。模块 import 时读取仓库根 `.env`（若安装了 python-dotenv），
 并把 config/*.yml 解析为模块级字典，供 ModelRouter、RAG、护栏等使用。
 
@@ -41,23 +41,13 @@ def load_prompts_config(config_path: str = get_abs_path("config/prompts.yml")) -
     return _load_yaml(config_path)
 
 
-def load_agent_config(config_path: str = get_abs_path("config/agent.yml")) -> dict[str, Any]:
-    """Agent 杂项（遗留字段，当前主流程很少读取）。"""
-    return _load_yaml(config_path)
-
-
 def load_models_config(config_path: str = get_abs_path("config/models.yml")) -> dict[str, Any]:
     """聊天/向量模型注册表、Auto 优先级、额度错误关键词。"""
     return _load_yaml(config_path)
 
 
 def load_logging_config(config_path: str = get_abs_path("config/logging.yml")) -> dict[str, Any]:
-    """日志级别、轮转、DEBUG_LOG 裁剪参数。"""
-    return _load_yaml(config_path)
-
-
-def load_prompt_guard_config(config_path: str = get_abs_path("config/prompt_guard.yml")) -> dict[str, Any]:
-    """泄露系统提示 / 忽略规则 的正则与回复文案。"""
+    """日志级别、轮转参数。"""
     return _load_yaml(config_path)
 
 
@@ -69,11 +59,9 @@ def load_rag_runtime_config(config_path: str = get_abs_path("config/rag_runtime.
         return {}
 
 
-# 进程内单次加载；改 YAML 后需重启进程（护栏 check 会重新 load）
+# 进程内单次加载；改 YAML 后需重启进程
 rag_config = load_rag_config()
 chroma_config = load_chroma_config()
 prompts_config = load_prompts_config()
-agent_config = load_agent_config()
 models_config = load_models_config()
-prompt_guard_config = load_prompt_guard_config()
 rag_runtime_config = load_rag_runtime_config()

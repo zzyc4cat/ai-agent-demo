@@ -1,8 +1,6 @@
 """
-双通道日志：
-
-1. logs/agent.log — TimedRotatingFileHandler，带 request_id/user/session/thread/model
-2. 根目录 DEBUG_LOG.md — 人读阶段记录，超体积裁剪「运行时记录」区
+单通道日志：logs/agent.log（TimedRotatingFileHandler），
+带 request_id/user/session/thread/model。
 
 log_event() 是业务埋点入口；敏感字段名会走 redact_mapping。
 """
@@ -197,96 +195,7 @@ def should_log_prompt() -> bool:
     return bool(_load_logging_config().get("log_prompt"))
 
 
-# —— DEBUG_LOG.md：人读阶段日志 + 体积清理 ——
-_RUNTIME_ANCHOR = "## 运行时记录（自动追加）"
-_RUNTIME_MARKER = "<!-- RUNTIME_LOG_START -->"
-_debug_log_lock = __import__("threading").Lock()
-
-
-def _debug_log_path() -> str:
-    """返回根目录 DEBUG_LOG.md 路径。"""
-    return get_abs_path("DEBUG_LOG.md")
-
-
-def append_debug_log(stage: str, **fields: Any) -> None:
-    """向 DEBUG_LOG.md 追加一条阶段记录；超限则裁剪运行时区。"""
-    cfg = _load_logging_config()
-    if not bool(cfg.get("debug_log_enabled", True)):
-        return
-    from datetime import datetime
-
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    safe = {k: _truncate(v, 180) for k, v in fields.items()}
-    safe = redact_mapping({str(k): v for k, v in safe.items()})
-    line_fields = " ".join(f"{k}={v}" for k, v in safe.items())
-    block = (
-        f"\n### [{ts}] stage={stage} "
-        f"req={_request_id.get()} user={_user_id.get()} model={_model_id.get()}\n"
-        f"- {line_fields}\n"
-    )
-    path = _debug_log_path()
-    with _debug_log_lock:
-        try:
-            if not os.path.isfile(path):
-                with open(path, "w", encoding="utf-8") as f:
-                    f.write(
-                        "# DEBUG_LOG\n\n"
-                        f"{_RUNTIME_ANCHOR}\n\n{_RUNTIME_MARKER}\n"
-                    )
-            with open(path, "a", encoding="utf-8") as f:
-                f.write(block)
-            _maybe_trim_debug_log(path, cfg)
-        except Exception:
-            pass
-
-
-def _maybe_trim_debug_log(path: str, cfg: dict[str, Any]) -> None:
-    """超体积时只裁剪运行时记录区。"""
-    max_chars = int(cfg.get("debug_log_max_chars", 400000))
-    keep_chars = int(cfg.get("debug_log_keep_chars", 240000))
-    try:
-        text = open(path, encoding="utf-8").read()
-    except Exception:
-        return
-    if len(text) <= max_chars:
-        return
-    idx_marker = text.find(_RUNTIME_MARKER)
-    if idx_marker >= 0:
-        marker_end = idx_marker + len(_RUNTIME_MARKER)
-        head = text[:marker_end]
-        runtime = text[marker_end:]
-    else:
-        idx = text.find(_RUNTIME_ANCHOR)
-        if idx < 0:
-            open(path, "w", encoding="utf-8").write(
-                "# DEBUG_LOG（已自动清理，无锚点故截断尾部）\n\n" + text[-keep_chars:]
-            )
-            return
-        marker_end = idx + len(_RUNTIME_ANCHOR)
-        head = text[:marker_end] + f"\n\n{_RUNTIME_MARKER}"
-        runtime = text[marker_end:]
-    if len(runtime) > keep_chars:
-        runtime = "\n\n> （系统自动清理：仅保留最近运行记录）\n" + runtime[-keep_chars:]
-    open(path, "w", encoding="utf-8").write(head + runtime)
-
-
 def log_event(event: str, level: int = logging.INFO, **fields: Any) -> None:
-    """统一事件日志；阶段事件同步写入 DEBUG_LOG.md。"""
+    """统一事件日志。"""
     safe = {k: _truncate(v) for k, v in fields.items()}
     logger.log(level, "event=%s %s", event, safe)
-    if event.startswith(
-        (
-            "chat.",
-            "rag.",
-            "model.",
-            "tool.",
-            "guard.",
-            "user.",
-            "kb.",
-            "app.",
-            "bootstrap.",
-            "checkpointer",
-            "eval.",
-        )
-    ):
-        append_debug_log(event, **fields)

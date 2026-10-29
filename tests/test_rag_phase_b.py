@@ -29,8 +29,8 @@ def test_kb_meta_bump(tmp_path, monkeypatch):
     v1 = kb_meta.bump_kb_version("sample")
     assert v1 == "1"
     assert kb_meta.get_kb_version("sample") == "1"
-    kb_meta.upsert_kb_file(scope="sample", path="data/sample/a.txt", content_hash="abc", chunk_count=3)
-    assert kb_meta.get_kb_file_hash("sample", "data/sample/a.txt") == "abc"
+    kb_meta.upsert_kb_file(scope="sample", path="data/tenants/demo/a.txt", content_hash="abc", chunk_count=3)
+    assert kb_meta.get_kb_file_hash("sample", "data/tenants/demo/a.txt") == "abc"
 
 
 def test_md_loader(tmp_path):
@@ -53,12 +53,3 @@ def test_pdf_loader_optional_password_signature():
     assert "password" in sig.parameters
     assert sig.parameters["password"].default is None
 
-
-def test_ingest_cli_help():
-    """入库 CLI --help 可运行。"""
-    from rag.ingest import main
-    import pytest
-
-    with pytest.raises(SystemExit) as ei:
-        main(["--help"])
-    assert ei.value.code == 0

@@ -1,8 +1,7 @@
-# chroma：示例库默认从 data/sample 加载
+# chroma：持久化目录、文件类型与切分参数
 collection_name: agent
 persist_directory: chroma_db
 k: 3
-data_path: data/sample
 md5_hex_store: md5.text
 allow_konwledge_file_type: ["txt", "pdf", "md", "docx"]
 chunk_size: 500

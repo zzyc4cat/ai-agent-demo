@@ -316,16 +316,6 @@ class VectorStoreService:
             logger.error(f"[加载知识库]{path} 失败：{e}", exc_info=True)
         return stats
 
-    def load_document(self) -> dict[str, Any]:
-        """兼容旧接口：加载示例库 data/sample → sample collection。"""
-        scope = "sample"
-        return self.ingest_path(
-            chroma_config.get("data_path") or "data/sample",
-            corpus="sample",
-            scope=scope,
-            user_id=None,
-        )
-
 
 def get_vector_store(collection: str) -> VectorStoreService:
     """按 collection 名构造 VectorStoreService。"""

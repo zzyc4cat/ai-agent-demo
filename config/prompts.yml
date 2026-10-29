@@ -1,5 +1,2 @@
-﻿# Prompt 文件路径（相对仓库根）。prompt_loader 只读这些文件，不接受用户注入的系统提示。
-main_prompt_path: prompts/main_prompt.txt
+# Prompt 文件路径（相对仓库根）。prompt_loader 只读这些文件，不接受用户注入的系统提示。
 rag_summarize_prompt_path: prompts/rag_summarize.txt
-report_prompt_path: prompts/skills/weekly_review.txt
-skills_dir: prompts/skills
